@@ -317,6 +317,7 @@ export interface PlatformStats {
   avgPrice: number;
   numOfCities: number;
   numOfVerified: number;
+  numOfTrainers: number;
 }
 
 // ── Booking API ───────────────────────────────────────────────────────────

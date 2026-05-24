@@ -67,7 +67,7 @@ const chipX: React.CSSProperties = {
 
 // ── Stats bar ─────────────────────────────────────────────────────────────────
 
-function StatsBar({ totalCount }: { totalCount: number }) {
+function StatsBar() {
   const { stats, isLoading } = useStats();
 
   const statDivider = (
@@ -130,7 +130,7 @@ function StatsBar({ totalCount }: { totalCount: number }) {
       {cell(
         'Верифіковано',
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>,
-        `${stats.numOfVerified}/${totalCount}`,
+        `${stats.numOfVerified}/${stats.numOfTrainers}`,
       )}
     </div>
   );
@@ -225,7 +225,7 @@ export default function SearchPage() {
           </div>
           {!isMobile && (
             <div style={{ flex: 1, minWidth: 0 }}>
-              <StatsBar totalCount={totalCount} />
+              <StatsBar />
             </div>
           )}
         </div>
