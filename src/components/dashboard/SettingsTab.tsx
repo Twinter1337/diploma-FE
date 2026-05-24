@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import type { ClientProfileData } from '../../types';
 import type { SettingsFields } from '../../hooks/useClientDashboard';
 import { useAuthContext } from '../../contexts/AuthContext';
+import { useIsMobile } from '../../hooks/useWindowWidth';
 
 const UA_CITIES = [
   'Київ', 'Харків', 'Одеса', 'Дніпро', 'Запоріжжя', 'Львів',
@@ -99,6 +100,7 @@ export default function SettingsTab({
 }: Props) {
   const { user } = useAuthContext();
   const isAdmin = user?.role === 2;
+  const isMobile = useIsMobile();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [firstName, setFirstName] = useState('');
@@ -155,7 +157,7 @@ export default function SettingsTab({
 
   if (isLoading || !profile) {
     return (
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 320px', gap: 20 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {[200, 160, 140].map((h, i) => (
             <div key={i} style={{ ...card, height: h, background: '#F8F9FB' }} />
@@ -171,13 +173,13 @@ export default function SettingsTab({
   const initials = `${(firstName || profile.firstName)[0] ?? ''}${(lastName || profile.lastName)[0] ?? ''}`;
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20, alignItems: 'flex-start' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 320px', gap: 20, alignItems: 'flex-start' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
         {/* Personal data */}
         <section style={card}>
           <h2 style={sectionTitle}>Особисті дані</h2>
-          <div style={{ display: 'flex', gap: 18, alignItems: 'center', margin: '16px 0 20px' }}>
+          <div style={{ display: 'flex', gap: 18, alignItems: isMobile ? 'flex-start' : 'center', flexDirection: isMobile ? 'column' : 'row', margin: '16px 0 20px' }}>
             <div style={{
               width: 72, height: 72, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
               background: avatarPreview
@@ -218,7 +220,7 @@ export default function SettingsTab({
               <p style={{ margin: '8px 0 0', fontSize: 12, color: '#9CA3AF' }}>JPG або PNG, макс. 10 МБ</p>
             </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
             <Field label="Ім'я">
               <TextInput value={firstName} onChange={setFirstName} placeholder="Ім'я" />
             </Field>
@@ -258,7 +260,7 @@ export default function SettingsTab({
           <p style={{ margin: '4px 0 16px', fontSize: 13, color: '#6B7280' }}>
             Допоможе тренерам підібрати оптимальну програму
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
             <Field label="Зріст, см">
               <TextInput value={heightCm} onChange={setHeightCm} type="number" placeholder="170" />
             </Field>
@@ -331,7 +333,7 @@ export default function SettingsTab({
       </div>
 
       {/* Sidebar */}
-      <aside style={{ ...card, position: 'sticky', top: 80, padding: 18 }}>
+      <aside style={{ ...card, position: isMobile ? 'static' : 'sticky', top: 80, padding: 18 }}>
         <h3 style={{ ...sectionTitle, fontSize: 14, marginBottom: 10 }}>Захист даних</h3>
         <p style={{ margin: 0, fontSize: 12.5, color: '#6B7280', lineHeight: 1.6 }}>
           Ваші особисті дані видимі лише тренеру, до якого ви записались. Ми не передаємо їх третім особам.

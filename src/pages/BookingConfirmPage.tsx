@@ -6,6 +6,7 @@ import SessionDetails from '../components/booking/SessionDetails';
 import ReminderSection from '../components/booking/ReminderSection';
 import OrderSummary, { calcServiceFee } from '../components/booking/OrderSummary';
 import Icon from '../components/ui/Icon';
+import { useIsMobile } from '../hooks/useWindowWidth';
 
 interface BookingPageState {
   slot: ScheduleSlot;
@@ -116,6 +117,7 @@ export default function BookingConfirmPage() {
   const { create, isLoading, error } = useCreateBooking();
   const [reminder, setReminder] = useState(60);
 
+  const isMobile = useIsMobile();
   const state = location.state;
   if (!isBookingPageState(state)) {
     navigate('/search', { replace: true });
@@ -141,7 +143,7 @@ export default function BookingConfirmPage() {
           style={{
             maxWidth: 1280,
             margin: '0 auto',
-            padding: '14px 32px',
+            padding: isMobile ? '12px 16px' : '14px 32px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -190,7 +192,7 @@ export default function BookingConfirmPage() {
         </div>
       </header>
 
-      <main style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 32px 64px' }}>
+      <main style={{ maxWidth: 1200, margin: '0 auto', padding: isMobile ? '16px 16px 48px' : '32px 32px 64px' }}>
         <Link
           to="/search"
           style={{
@@ -244,8 +246,8 @@ export default function BookingConfirmPage() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 380px',
-            gap: 24,
+            gridTemplateColumns: isMobile ? '1fr' : '1fr 380px',
+            gap: isMobile ? 16 : 24,
             alignItems: 'flex-start',
           }}
         >

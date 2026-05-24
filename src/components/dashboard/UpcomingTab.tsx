@@ -4,6 +4,7 @@ import type { ClientBooking } from '../../types';
 import { BookingStatus, SlotFormat } from '../../types';
 import { usePaymentCountdown } from '../../hooks/usePaymentCountdown';
 import DisputeModal from '../dispute/DisputeModal';
+import { useIsMobile } from '../../hooks/useWindowWidth';
 
 function nameHue(name: string): number {
   let h = 0;
@@ -188,6 +189,7 @@ function BookingCard({ b, idx, cancellingId, retryingPaymentId, lateFeeCheckout,
   const [isShowingDetails, setIsShowingDetails] = useState(false);
   const [isDisputeOpen, setIsDisputeOpen] = useState(false);
   const { label: countdownLabel, expired: paymentExpired } = usePaymentCountdown(b.createdAt);
+  const isMobile = useIsMobile();
 
   const { date, time } = formatDateTimeUk(b.startTime);
   const countdown = formatCountdown(b.startTime);
@@ -200,14 +202,50 @@ function BookingCard({ b, idx, cancellingId, retryingPaymentId, lateFeeCheckout,
     || (b as unknown as Record<string, unknown>).gymAddress;
   const bx = b as ClientBooking & { description?: string; gymName?: string; gymAddress?: string };
 
+  const actionButtons = (
+    <div style={{ display: 'flex', flexDirection: isMobile ? 'row' : 'column', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
+      {hasDetails && (
+        <button
+          onClick={() => setIsShowingDetails(v => !v)}
+          style={{ ...btnGhost, padding: '9px 16px', flex: isMobile ? 1 : undefined }}
+        >
+          {isShowingDetails ? 'Сховати' : 'Деталі'}
+        </button>
+      )}
+      {b.status === BookingStatus.Pending && !paymentExpired && (
+        <button
+          onClick={() => onRetryPayment(b.id)}
+          disabled={isRetrying}
+          style={{ ...btnPrimary, opacity: isRetrying ? 0.6 : 1, flex: isMobile ? 1 : undefined }}
+        >
+          {isRetrying ? 'Переадресація…' : 'Оплатити'}
+        </button>
+      )}
+      {b.status !== BookingStatus.Cancelled && !isConfirming && (
+        <button
+          onClick={() => setIsConfirming(true)}
+          disabled={isCancelling}
+          style={{ ...btnDanger, opacity: isCancelling ? 0.5 : 1, flex: isMobile ? 1 : undefined }}
+        >
+          Скасувати
+        </button>
+      )}
+      {b.status !== BookingStatus.Pending && (
+        <button onClick={() => setIsDisputeOpen(true)} style={{ ...btnGhost, flex: isMobile ? 1 : undefined }}>
+          Відкрити спір
+        </button>
+      )}
+    </div>
+  );
+
   return (
     <article key={b.id ?? idx} style={{ ...card, display: 'flex', flexDirection: 'column', gap: 0 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 18, alignItems: 'center' }}>
-        <TrainerAvatar name={b.trainerFullName} size={62} avatarUrl={b.trainerAvatarUrl} />
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'auto 1fr' : 'auto 1fr auto', gap: isMobile ? 12 : 18, alignItems: 'center' }}>
+        <TrainerAvatar name={b.trainerFullName} size={isMobile ? 48 : 62} avatarUrl={b.trainerAvatarUrl} />
 
         <div style={{ minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 }}>
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: '#0F172A', letterSpacing: '-0.01em' }}>
+            <h3 style={{ margin: 0, fontSize: isMobile ? 14 : 16, fontWeight: 600, color: '#0F172A', letterSpacing: '-0.01em' }}>
               {b.trainerFullName}
             </h3>
             <StatusBadge
@@ -216,7 +254,7 @@ function BookingCard({ b, idx, cancellingId, retryingPaymentId, lateFeeCheckout,
               expired={b.status === BookingStatus.Pending && paymentExpired}
             />
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, fontSize: 13, color: '#6B7280' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 8 : 14, fontSize: 13, color: '#6B7280' }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               <CalendarIcon />
               <strong style={{ color: '#0F172A', fontWeight: 600 }}>{date}, {time}</strong>
@@ -236,40 +274,10 @@ function BookingCard({ b, idx, cancellingId, retryingPaymentId, lateFeeCheckout,
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0 }}>
-          {hasDetails && (
-            <button
-              onClick={() => setIsShowingDetails(v => !v)}
-              style={{ ...btnGhost, padding: '9px 16px' }}
-            >
-              {isShowingDetails ? 'Сховати' : 'Деталі'}
-            </button>
-          )}
-          {b.status === BookingStatus.Pending && !paymentExpired && (
-            <button
-              onClick={() => onRetryPayment(b.id)}
-              disabled={isRetrying}
-              style={{ ...btnPrimary, opacity: isRetrying ? 0.6 : 1 }}
-            >
-              {isRetrying ? 'Переадресація…' : 'Оплатити'}
-            </button>
-          )}
-          {b.status !== BookingStatus.Cancelled && !isConfirming && (
-            <button
-              onClick={() => setIsConfirming(true)}
-              disabled={isCancelling}
-              style={{ ...btnDanger, opacity: isCancelling ? 0.5 : 1 }}
-            >
-              Скасувати
-            </button>
-          )}
-          {b.status !== BookingStatus.Pending && (
-            <button onClick={() => setIsDisputeOpen(true)} style={btnGhost}>
-              Відкрити спір
-            </button>
-          )}
-        </div>
+        {!isMobile && actionButtons}
       </div>
+
+      {isMobile && <div style={{ marginTop: 12 }}>{actionButtons}</div>}
 
       {isDisputeOpen && (
         <DisputeModal

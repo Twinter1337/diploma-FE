@@ -1,4 +1,5 @@
 import type { UserAchievementsResponse } from '../../types';
+import { useIsMobile } from '../../hooks/useWindowWidth';
 
 function LockIcon() {
   return (
@@ -31,6 +32,9 @@ interface Props {
 }
 
 export default function AchievementsTab({ data, isLoading, error }: Props) {
+  const isMobile = useIsMobile();
+  const gridCols = isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)';
+
   if (isLoading) {
     return (
       <div>
@@ -38,7 +42,7 @@ export default function AchievementsTab({ data, isLoading, error }: Props) {
           height: 80, borderRadius: 14, background: '#F8F9FB',
           border: '1px solid #E7E9EE', marginBottom: 18,
         }} />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: gridCols, gap: 14 }}>
           {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
             <div key={i} style={{ height: 160, borderRadius: 14, background: '#F8F9FB', border: '1px solid #E7E9EE' }} />
           ))}
@@ -68,7 +72,9 @@ export default function AchievementsTab({ data, isLoading, error }: Props) {
         background: 'linear-gradient(135deg, var(--accent-50) 0%, white 100%)',
         border: '1px solid var(--accent-100)',
         borderRadius: 14, padding: '18px 22px', marginBottom: 18,
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16,
+        display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
+        justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: 12,
       }}>
         <div>
           <h2 style={{
@@ -83,7 +89,7 @@ export default function AchievementsTab({ data, isLoading, error }: Props) {
             {' '}з {totalCount} досягнень
           </p>
         </div>
-        <div style={{ width: 200, flexShrink: 0 }}>
+        <div style={{ width: isMobile ? '100%' : 200, flexShrink: 0 }}>
           <div style={{ height: 8, background: '#E7E9EE', borderRadius: 999, overflow: 'hidden' }}>
             <div style={{
               width: `${totalCount > 0 ? (earnedCount / totalCount) * 100 : 0}%`,
@@ -94,14 +100,14 @@ export default function AchievementsTab({ data, isLoading, error }: Props) {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: gridCols, gap: 14 }}>
         {achievements.map(a => {
           const color = achievementColor(a.type);
           return (
             <div key={a.id} style={{
               background: a.isEarned ? 'white' : '#FAFBFC',
               border: `1px solid ${a.isEarned ? '#E7E9EE' : '#F1F2F4'}`,
-              borderRadius: 14, padding: 18, textAlign: 'center',
+              borderRadius: 14, padding: isMobile ? '14px 10px' : 18, textAlign: 'center',
               position: 'relative', overflow: 'hidden',
             }}>
               <div style={{

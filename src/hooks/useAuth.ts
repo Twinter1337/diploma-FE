@@ -29,7 +29,15 @@ export function useLogin() {
         data.user.role === UserRole.Admin ? '/admin' :
         data.user.role === UserRole.Trainer ? '/trainer' :
         '/search';
-      navigate(from ? `${from.pathname}${from.search}` : defaultDestination, { replace: true });
+      const fromPath = from?.pathname ?? '';
+      const isRoleSafeFrom =
+        data.user.role === UserRole.Admin ? fromPath.startsWith('/admin') :
+        data.user.role === UserRole.Trainer ? fromPath === '/trainer' :
+        !fromPath.startsWith('/admin') && fromPath !== '/trainer';
+      const target = from && isRoleSafeFrom
+        ? `${from.pathname}${from.search}`
+        : defaultDestination;
+      navigate(target, { replace: true });
       return data;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не вдалося увійти. Спробуйте ще раз.');

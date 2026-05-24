@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import AppHeader from '../components/ui/AppHeader';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useIsMobile } from '../hooks/useWindowWidth';
 import { useClientDashboard } from '../hooks/useClientDashboard';
 import UpcomingTab from '../components/dashboard/UpcomingTab';
 import HistoryTab from '../components/dashboard/HistoryTab';
@@ -17,6 +18,7 @@ interface TabDef {
 
 export default function ClientProfilePage() {
   const { user } = useAuthContext();
+  const isMobile = useIsMobile();
   const isAdmin = user?.role === 2;
   const [activeTab, setActiveTab] = useState<TabId>(isAdmin ? 'settings' : 'upcoming');
 
@@ -57,10 +59,10 @@ export default function ClientProfilePage() {
     <div style={{ minHeight: '100vh', background: '#F8F9FB' }}>
       <AppHeader />
 
-      <main style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 32px 64px' }}>
+      <main style={{ maxWidth: 1280, margin: '0 auto', padding: isMobile ? '16px 16px 48px' : '32px 32px 64px' }}>
         <div style={{ marginBottom: 24 }}>
           <h1 style={{
-            margin: 0, fontSize: 28, fontWeight: 700, color: '#0F172A',
+            margin: 0, fontSize: isMobile ? 22 : 28, fontWeight: 700, color: '#0F172A',
             letterSpacing: '-0.025em', fontFamily: 'var(--display)',
           }}>
             Привіт, {user?.firstName ?? profile?.firstName ?? ''}! 👋
@@ -74,6 +76,7 @@ export default function ClientProfilePage() {
         <div style={{
           display: 'flex', gap: 4, marginBottom: 24,
           borderBottom: '1px solid #E7E9EE',
+          overflowX: 'auto',
         }}>
           {tabs.map(tab => {
             const active = activeTab === tab.id;

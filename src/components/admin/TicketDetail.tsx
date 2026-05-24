@@ -7,6 +7,7 @@ import DocumentPreview from './DocumentPreview';
 import { btnGhost, btnPrimary, COLUMNS } from './styles';
 import { statusKeyToInt, statusIntToKey } from '../../services/adminService';
 import type { AdminAssignee, AdminTicketDetail, AdminTicketKanbanStatus } from '../../types';
+import { useIsMobile } from '../../hooks/useWindowWidth';
 
 interface Props {
   ticket: AdminTicketDetail;
@@ -22,7 +23,7 @@ interface Props {
 
 function MetaBlock({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div>
+    <div style={{ minWidth: 0 }}>
       <div
         style={{
           fontSize: 11,
@@ -54,6 +55,7 @@ export default function TicketDetail({
   onReply,
 }: Props) {
   const isDoc = ticket.type === 'document';
+  const isMobile = useIsMobile();
   const [assignOpen, setAssignOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
@@ -144,15 +146,15 @@ export default function TicketDetail({
         {/* Header */}
         <div
           style={{
-            padding: '22px 26px 18px',
+            padding: isMobile ? '18px 16px 14px' : '22px 26px 18px',
             borderBottom: '1px solid #EDEFF3',
             display: 'flex',
             flexDirection: 'column',
             gap: 12,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
               <span
                 title={ticket.id}
                 style={{
@@ -164,8 +166,11 @@ export default function TicketDetail({
                   padding: '3px 9px',
                   background: '#F1F2F4',
                   borderRadius: 6,
-                  wordBreak: 'break-all',
-                  maxWidth: 320,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  maxWidth: isMobile ? 'none' : 320,
+                  minWidth: 0,
                 }}
               >
                 {ticket.id}
@@ -207,15 +212,15 @@ export default function TicketDetail({
         </div>
 
         {/* Body */}
-        <div style={{ flex: 1, overflow: 'auto', padding: '20px 26px' }}>
+        <div style={{ flex: 1, overflow: 'auto', padding: isMobile ? '16px' : '20px 26px' }}>
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
+              gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
               gap: 14,
               background: '#FAFBFC',
               borderRadius: 12,
-              padding: 16,
+              padding: isMobile ? 14 : 16,
               marginBottom: 18,
               border: '1px solid #EDEFF3',
             }}
@@ -432,7 +437,8 @@ export default function TicketDetail({
                       fontWeight: 600,
                       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
                       wordBreak: 'break-all',
-                      display: 'inline-block',
+                      display: 'block',
+                      maxWidth: '100%',
                     }}
                   >
                     {ticket.relatedBookingId}
@@ -454,7 +460,8 @@ export default function TicketDetail({
                       fontWeight: 600,
                       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
                       wordBreak: 'break-all',
-                      display: 'inline-block',
+                      display: 'block',
+                      maxWidth: '100%',
                     }}
                   >
                     {ticket.relatedTrainerId}
@@ -506,17 +513,18 @@ export default function TicketDetail({
         {/* Footer */}
         <div
           style={{
-            padding: '16px 26px',
+            padding: isMobile ? '14px 16px' : '16px 26px',
             borderTop: '1px solid #EDEFF3',
             background: '#FAFBFC',
             display: 'flex',
-            alignItems: 'center',
+            flexDirection: isMobile ? 'column' : 'row',
+            alignItems: isMobile ? 'stretch' : 'center',
             gap: 10,
             justifyContent: 'space-between',
           }}
         >
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 12, color: '#6B7280' }}>Статус:</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+            <span style={{ fontSize: 12, color: '#6B7280', flexShrink: 0 }}>Статус:</span>
             <select
               value={statusKey}
               disabled={busy}
@@ -531,6 +539,8 @@ export default function TicketDetail({
                 color: '#0F172A',
                 cursor: busy ? 'not-allowed' : 'pointer',
                 opacity: busy ? 0.6 : 1,
+                flex: isMobile ? 1 : 'none',
+                minWidth: 0,
               }}
             >
               {COLUMNS.map((c) => (
@@ -539,7 +549,7 @@ export default function TicketDetail({
             </select>
           </div>
           {!isDoc && (
-            <div style={{ display: 'inline-flex', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 8, flexDirection: isMobile ? 'column' : 'row' }}>
               <button
                 onClick={openReply}
                 disabled={busy || !ticket.createdBy.email}

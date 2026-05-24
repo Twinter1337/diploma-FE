@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import type { PostTrainerSlotPayload } from '../../services/trainerService';
 import { SlotFormat } from '../../types';
+import { useIsMobile } from '../../hooks/useWindowWidth';
 
 const inputStyle: React.CSSProperties = {
   padding: '10px 12px', border: '1px solid #D9DCE2', borderRadius: 9,
   fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'white',
-  color: '#0F172A', width: '100%', boxSizing: 'border-box',
+  color: '#0F172A', width: '100%', boxSizing: 'border-box', minWidth: 0, maxWidth: '100%',
+  WebkitAppearance: 'none', appearance: 'none',
 };
 const selectStyle: React.CSSProperties = {
   ...inputStyle,
@@ -29,7 +31,7 @@ const btnGhost: React.CSSProperties = {
 
 function FieldLabel({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
       <label style={{ fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>{label}</label>
       {children}
     </div>
@@ -47,6 +49,7 @@ interface Props {
 }
 
 export default function NewSlotModal({ onClose, onSubmit }: Props) {
+  const isMobile = useIsMobile();
   const [date, setDate] = useState(todayDateStr());
   const [startTime, setStartTime] = useState('10:00');
   const [endTime, setEndTime] = useState('11:00');
@@ -122,85 +125,149 @@ export default function NewSlotModal({ onClose, onSubmit }: Props) {
       style={{
         position: 'fixed', inset: 0, zIndex: 50,
         background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(4px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: 24,
+        display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'center',
+        padding: isMobile ? 12 : 24,
+        overflowY: 'auto',
       }}
     >
       <div style={{
         background: 'white', borderRadius: 16, width: '100%', maxWidth: 560,
         boxShadow: '0 20px 60px rgba(15,23,42,0.18)',
         animation: 'modal-in 180ms ease',
+        marginTop: isMobile ? 16 : 0,
       }}>
-        <div style={{ padding: '24px 28px 0' }}>
+        <div style={{ padding: isMobile ? '20px 18px 0' : '24px 28px 0' }}>
           <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em', fontFamily: 'var(--display)' }}>
             Новий слот
           </h2>
         </div>
 
-        <div style={{ padding: '20px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-            <FieldLabel label="Дата">
-              <input
-                type="date"
-                value={date}
-                onChange={e => setDate(e.target.value)}
-                style={inputStyle}
-              />
-            </FieldLabel>
-            <FieldLabel label="Формат">
-              <select
-                value={format}
-                onChange={e => setFormat(parseInt(e.target.value, 10) as SlotFormat)}
-                style={selectStyle}
-              >
-                <option value={SlotFormat.Offline}>Офлайн</option>
-                <option value={SlotFormat.Online}>Онлайн</option>
-              </select>
-            </FieldLabel>
-          </div>
+        <div style={{ padding: isMobile ? '18px 18px' : '20px 28px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {isMobile ? (
+            <>
+              <FieldLabel label="Дата">
+                <input
+                  type="date"
+                  value={date}
+                  onChange={e => setDate(e.target.value)}
+                  style={inputStyle}
+                />
+              </FieldLabel>
+              <FieldLabel label="Формат">
+                <select
+                  value={format}
+                  onChange={e => setFormat(parseInt(e.target.value, 10) as SlotFormat)}
+                  style={selectStyle}
+                >
+                  <option value={SlotFormat.Offline}>Офлайн</option>
+                  <option value={SlotFormat.Online}>Онлайн</option>
+                </select>
+              </FieldLabel>
+              <FieldLabel label="Початок">
+                <input
+                  type="time"
+                  value={startTime}
+                  onChange={e => setStartTime(e.target.value)}
+                  style={inputStyle}
+                />
+              </FieldLabel>
+              <FieldLabel label="Кінець">
+                <input
+                  type="time"
+                  value={endTime}
+                  onChange={e => setEndTime(e.target.value)}
+                  style={inputStyle}
+                />
+              </FieldLabel>
+              <FieldLabel label="Вартість, грн">
+                <input
+                  type="number"
+                  value={price}
+                  onChange={e => setPrice(e.target.value)}
+                  placeholder="600"
+                  style={inputStyle}
+                  min="0.01"
+                  step="0.01"
+                />
+              </FieldLabel>
+              <FieldLabel label="Макс. клієнтів">
+                <input
+                  type="number"
+                  value={maxClients}
+                  onChange={e => setMaxClients(e.target.value)}
+                  style={inputStyle}
+                  min="1"
+                  max="100"
+                />
+              </FieldLabel>
+            </>
+          ) : (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <FieldLabel label="Дата">
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={e => setDate(e.target.value)}
+                    style={inputStyle}
+                  />
+                </FieldLabel>
+                <FieldLabel label="Формат">
+                  <select
+                    value={format}
+                    onChange={e => setFormat(parseInt(e.target.value, 10) as SlotFormat)}
+                    style={selectStyle}
+                  >
+                    <option value={SlotFormat.Offline}>Офлайн</option>
+                    <option value={SlotFormat.Online}>Онлайн</option>
+                  </select>
+                </FieldLabel>
+              </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-            <FieldLabel label="Початок">
-              <input
-                type="time"
-                value={startTime}
-                onChange={e => setStartTime(e.target.value)}
-                style={inputStyle}
-              />
-            </FieldLabel>
-            <FieldLabel label="Кінець">
-              <input
-                type="time"
-                value={endTime}
-                onChange={e => setEndTime(e.target.value)}
-                style={inputStyle}
-              />
-            </FieldLabel>
-          </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <FieldLabel label="Початок">
+                  <input
+                    type="time"
+                    value={startTime}
+                    onChange={e => setStartTime(e.target.value)}
+                    style={inputStyle}
+                  />
+                </FieldLabel>
+                <FieldLabel label="Кінець">
+                  <input
+                    type="time"
+                    value={endTime}
+                    onChange={e => setEndTime(e.target.value)}
+                    style={inputStyle}
+                  />
+                </FieldLabel>
+              </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-            <FieldLabel label="Вартість, грн">
-              <input
-                type="number"
-                value={price}
-                onChange={e => setPrice(e.target.value)}
-                placeholder="600"
-                style={inputStyle}
-                min="0.01"
-                step="0.01"
-              />
-            </FieldLabel>
-            <FieldLabel label="Макс. клієнтів">
-              <input
-                type="number"
-                value={maxClients}
-                onChange={e => setMaxClients(e.target.value)}
-                style={inputStyle}
-                min="1"
-                max="100"
-              />
-            </FieldLabel>
-          </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <FieldLabel label="Вартість, грн">
+                  <input
+                    type="number"
+                    value={price}
+                    onChange={e => setPrice(e.target.value)}
+                    placeholder="600"
+                    style={inputStyle}
+                    min="0.01"
+                    step="0.01"
+                  />
+                </FieldLabel>
+                <FieldLabel label="Макс. клієнтів">
+                  <input
+                    type="number"
+                    value={maxClients}
+                    onChange={e => setMaxClients(e.target.value)}
+                    style={inputStyle}
+                    min="1"
+                    max="100"
+                  />
+                </FieldLabel>
+              </div>
+            </>
+          )}
 
           {error && (
             <div style={{
@@ -212,7 +279,13 @@ export default function NewSlotModal({ onClose, onSubmit }: Props) {
           )}
         </div>
 
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', padding: '0 28px 24px' }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: isMobile ? 'column-reverse' : 'row',
+          gap: 10,
+          justifyContent: 'flex-end',
+          padding: isMobile ? '0 18px 20px' : '0 28px 24px',
+        }}>
           <button onClick={onClose} style={btnGhost}>Скасувати</button>
           <button onClick={handleSubmit} disabled={saving} style={{ ...btnPrimary, opacity: saving ? 0.7 : 1 }}>
             {saving ? 'Збереження…' : 'Зберегти слот'}

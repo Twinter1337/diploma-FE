@@ -3,6 +3,7 @@ import type { TrainerBooking } from '../../types';
 import { BookingStatus, SlotFormat } from '../../types';
 import DashAvatar from './DashAvatar';
 import DisputeModal from '../dispute/DisputeModal';
+import { useIsMobile } from '../../hooks/useWindowWidth';
 
 const card: React.CSSProperties = {
   background: 'white', border: '1px solid #E7E9EE', borderRadius: 14,
@@ -58,6 +59,7 @@ interface Props {
 
 export default function BookingsTab({ bookings, isLoading, error }: Props) {
   const [disputeFor, setDisputeFor] = useState<TrainerBooking | null>(null);
+  const isMobile = useIsMobile();
 
   if (isLoading) {
     return (
@@ -120,11 +122,13 @@ export default function BookingsTab({ bookings, isLoading, error }: Props) {
                 return (
                   <article key={b.id} style={{
                     ...card, padding: 16,
-                    display: 'grid', gridTemplateColumns: 'auto 1fr auto auto', gap: 16, alignItems: 'center',
+                    display: 'grid',
+                    gridTemplateColumns: isMobile ? 'auto 1fr auto' : 'auto 1fr auto auto',
+                    gap: isMobile ? 12 : 16, alignItems: 'center',
                   }}>
                     <DashAvatar name={b.clientFullName} size={48} avatarUrl={b.clientAvatarUrl} />
-                    <div>
-                      <div style={{ fontSize: 14.5, fontWeight: 600, color: '#0F172A', letterSpacing: '-0.01em', marginBottom: 4 }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 14.5, fontWeight: 600, color: '#0F172A', letterSpacing: '-0.01em', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {b.clientFullName}
                       </div>
                       <div style={{ display: 'flex', gap: 12, fontSize: 12.5, color: '#6B7280', flexWrap: 'wrap' }}>
@@ -133,7 +137,7 @@ export default function BookingsTab({ bookings, isLoading, error }: Props) {
                       </div>
                     </div>
                     <StatusBadge status={b.status} />
-                    {b.status !== BookingStatus.Pending && (
+                    {!isMobile && b.status !== BookingStatus.Pending && (
                       <button
                         onClick={() => setDisputeFor(b)}
                         style={{
@@ -141,6 +145,20 @@ export default function BookingsTab({ bookings, isLoading, error }: Props) {
                           border: '1.5px solid #E7E9EE', borderRadius: 9,
                           fontSize: 12.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                           whiteSpace: 'nowrap',
+                        }}
+                      >
+                        Відкрити спір
+                      </button>
+                    )}
+                    {isMobile && b.status !== BookingStatus.Pending && (
+                      <button
+                        onClick={() => setDisputeFor(b)}
+                        style={{
+                          gridColumn: '1 / -1',
+                          padding: '8px 12px', background: 'white', color: '#3F4651',
+                          border: '1.5px solid #E7E9EE', borderRadius: 9,
+                          fontSize: 12.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                          marginTop: 4,
                         }}
                       >
                         Відкрити спір

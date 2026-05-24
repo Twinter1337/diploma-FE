@@ -31,6 +31,20 @@ function ClientOnlyRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function TrainerOnlyRoute({ children }: { children: React.ReactNode }) {
+  const { user } = useAuthContext();
+  if (user?.role === 0) return <Navigate to="/search" replace />;
+  if (user?.role === 2) return <Navigate to="/admin" replace />;
+  return <>{children}</>;
+}
+
+function AdminOnlyRoute({ children }: { children: React.ReactNode }) {
+  const { user } = useAuthContext();
+  if (user?.role === 0) return <Navigate to="/search" replace />;
+  if (user?.role === 1) return <Navigate to="/trainer" replace />;
+  return <>{children}</>;
+}
+
 function DefaultRedirect() {
   const { user, isRestoring } = useAuthContext();
   if (isRestoring) return null;
@@ -53,9 +67,9 @@ function AnimatedRoutes() {
         <Route path="/booking/confirm" element={<PrivateRoute><PageTransition><BookingConfirmPage /></PageTransition></PrivateRoute>} />
         <Route path="/booking/success" element={<PrivateRoute><PageTransition><BookingSuccessPage /></PageTransition></PrivateRoute>} />
         <Route path="/booking/cancel" element={<PrivateRoute><PageTransition><BookingCancelPage /></PageTransition></PrivateRoute>} />
-        <Route path="/dashboard" element={<PrivateRoute><PageTransition><ClientProfilePage /></PageTransition></PrivateRoute>} />
-        <Route path="/trainer" element={<PrivateRoute><PageTransition><TrainerDashboardPage /></PageTransition></PrivateRoute>} />
-        <Route path="/admin" element={<PrivateRoute><PageTransition><AdminPanelPage /></PageTransition></PrivateRoute>} />
+        <Route path="/dashboard" element={<PrivateRoute><ClientOnlyRoute><PageTransition><ClientProfilePage /></PageTransition></ClientOnlyRoute></PrivateRoute>} />
+        <Route path="/trainer" element={<PrivateRoute><TrainerOnlyRoute><PageTransition><TrainerDashboardPage /></PageTransition></TrainerOnlyRoute></PrivateRoute>} />
+        <Route path="/admin" element={<PrivateRoute><AdminOnlyRoute><PageTransition><AdminPanelPage /></PageTransition></AdminOnlyRoute></PrivateRoute>} />
         <Route path="/review" element={<PrivateRoute><PageTransition><ReviewPage /></PageTransition></PrivateRoute>} />
         <Route path="*" element={<DefaultRedirect />} />
       </Routes>

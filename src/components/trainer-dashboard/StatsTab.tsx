@@ -1,5 +1,6 @@
 import type { TrainerStats, TrainerProfileReview } from '../../types';
 import DashAvatar from './DashAvatar';
+import { useIsMobile } from '../../hooks/useWindowWidth';
 
 const card: React.CSSProperties = {
   background: 'white', border: '1px solid #E7E9EE', borderRadius: 14,
@@ -55,9 +56,11 @@ interface Props {
 }
 
 export default function StatsTab({ stats, reviews, isLoading, error }: Props) {
+  const isMobile = useIsMobile();
+
   if (isLoading) {
     return (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 16 }}>
         {[1, 2, 3].map(i => (
           <div key={i} style={{ ...card, height: 140, background: '#F8F9FB' }} />
         ))}
@@ -79,7 +82,7 @@ export default function StatsTab({ stats, reviews, isLoading, error }: Props) {
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 22 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 16, marginBottom: 22 }}>
         <StatCard
           label="Завершених занять"
           value={String(stats.numOfCompletedSlots)}
@@ -103,7 +106,7 @@ export default function StatsTab({ stats, reviews, isLoading, error }: Props) {
         />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.4fr 1fr', gap: 20 }}>
         <section style={{ ...card, padding: 22 }}>
           <div style={{ marginBottom: 18 }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: '#0F172A', letterSpacing: '-0.01em' }}>Динаміка занять</div>

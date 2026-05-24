@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useIsMobile } from '../hooks/useWindowWidth';
 import { useOnboarding } from '../hooks/useOnboarding';
 import StepIndicator from '../components/onboarding/StepIndicator';
 import StepOne from '../components/onboarding/StepOne';
@@ -19,6 +20,7 @@ const stepTransition = { duration: 0.26, ease: [0.25, 0.1, 0.25, 1] as const };
 
 export default function OnboardingPage() {
   const { isAuthenticated, isRestoring, user } = useAuthContext();
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(1);
@@ -54,7 +56,8 @@ export default function OnboardingPage() {
     <div style={{ background: '#F8F9FB', minHeight: '100vh' }}>
       <header style={{
         borderBottom: '1px solid #E7E9EE', background: 'white',
-        padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: isMobile ? '14px 16px' : '16px 32px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
           <div style={{
@@ -73,7 +76,7 @@ export default function OnboardingPage() {
         )}
       </header>
 
-      <main style={{ maxWidth: 720, margin: '0 auto', padding: '44px 32px 80px' }}>
+      <main style={{ maxWidth: 720, margin: '0 auto', padding: isMobile ? '20px 16px 48px' : '44px 32px 80px' }}>
         <StepIndicator currentStep={step} labels={STEP_LABELS} />
 
         <div style={{
@@ -89,7 +92,7 @@ export default function OnboardingPage() {
               animate="center"
               exit="exit"
               transition={stepTransition}
-              style={{ padding: '36px 40px' }}
+              style={{ padding: isMobile ? '20px 16px' : '36px 40px' }}
             >
               {step === 1 && (
                 <StepOne

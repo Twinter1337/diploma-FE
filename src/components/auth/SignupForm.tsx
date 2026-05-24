@@ -99,16 +99,18 @@ export default function SignupForm() {
         )}
       </div>
 
-      <Input
-        label="Пароль"
-        type={showPwd ? 'text' : 'password'}
-        value={fields.password}
-        onChange={(v) => set('password', v)}
-        placeholder="Мінімум 8 символів"
-        leftIcon={<Icon d="M5 11h14v10H5z|M8 11V7a4 4 0 118 0v4" size={17} />}
-        rightSlot={<EyeToggle show={showPwd} onToggle={() => setShowPwd((s) => !s)} />}
-      />
-      {fields.password && <PasswordStrength value={fields.password} />}
+      <div>
+        <Input
+          label="Пароль"
+          type={showPwd ? 'text' : 'password'}
+          value={fields.password}
+          onChange={(v) => set('password', v)}
+          placeholder="Мінімум 8 символів"
+          leftIcon={<Icon d="M5 11h14v10H5z|M8 11V7a4 4 0 118 0v4" size={17} />}
+          rightSlot={<EyeToggle show={showPwd} onToggle={() => setShowPwd((s) => !s)} />}
+        />
+        {fields.password && <PasswordStrength value={fields.password} />}
+      </div>
 
       <Input
         label="Підтвердження паролю"

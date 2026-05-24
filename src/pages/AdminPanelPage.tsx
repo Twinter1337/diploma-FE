@@ -9,9 +9,11 @@ import { COLUMNS, card } from '../components/admin/styles';
 import { useAdminTickets } from '../hooks/useAdminTickets';
 import { statusKeyToInt, statusIntToKey } from '../services/adminService';
 import type { AdminTicketDetail, AdminTicketKanbanStatus } from '../types';
+import { useIsMobile } from '../hooks/useWindowWidth';
 
 export default function AdminPanelPage() {
   const a = useAdminTickets();
+  const isMobile = useIsMobile();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detail, setDetail] = useState<AdminTicketDetail | null>(null);
@@ -98,7 +100,7 @@ export default function AdminPanelPage() {
     <div style={{ background: '#F8F9FB', minHeight: '100vh' }}>
       <AppHeader />
 
-      <main style={{ maxWidth: 1480, margin: '0 auto', padding: '28px 28px 64px' }}>
+      <main style={{ maxWidth: 1480, margin: '0 auto', padding: isMobile ? '16px 16px 48px' : '28px 28px 64px' }}>
         {/* Page header */}
         <div style={{ marginBottom: 22, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
           <div>
@@ -124,7 +126,7 @@ export default function AdminPanelPage() {
             <h1
               style={{
                 margin: 0,
-                fontSize: 28,
+                fontSize: isMobile ? 22 : 28,
                 fontWeight: 700,
                 color: '#0F172A',
                 letterSpacing: '-0.025em',
@@ -198,7 +200,16 @@ export default function AdminPanelPage() {
         </div>
 
         {/* Kanban */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, alignItems: 'stretch' }}>
+        <div style={{
+          overflowX: isMobile ? 'auto' : 'visible',
+          paddingBottom: isMobile ? 8 : 0,
+        }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? 'repeat(4, minmax(260px, 1fr))' : 'repeat(4, 1fr)',
+          gap: 14, alignItems: 'stretch',
+          minWidth: isMobile ? 'max-content' : 'auto',
+        }}>
           {COLUMNS.map((col) => (
             <KanbanColumn
               key={col.id}
@@ -213,6 +224,7 @@ export default function AdminPanelPage() {
               onDragEnd={() => { setDraggingId(null); setHoverOver(null); }}
             />
           ))}
+        </div>
         </div>
 
         <p style={{ margin: '18px 0 0', fontSize: 12.5, color: '#9CA3AF', textAlign: 'center' }}>

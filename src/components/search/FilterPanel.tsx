@@ -3,6 +3,7 @@ import type { SearchFilters } from '../../hooks/useTrainerSearch';
 import Icon from '../ui/Icon';
 import MultiSelectPills from '../onboarding/MultiSelectPills';
 import DualRangeSlider from './DualRangeSlider';
+import { useIsMobile } from '../../hooks/useWindowWidth';
 
 const UA_CITIES = [
   'Київ', 'Харків', 'Одеса', 'Дніпро', 'Запоріжжя', 'Львів',
@@ -61,6 +62,7 @@ export default function FilterPanel({
   specializationTags, disabilityTags, methodologyTags,
   tagsLoading, tagsError, onRetryTags,
 }: FilterPanelProps) {
+  const isMobile = useIsMobile();
   const update = <K extends keyof SearchFilters>(k: K, v: SearchFilters[K]) =>
     setFilters(f => ({ ...f, [k]: v }));
 
@@ -96,10 +98,11 @@ export default function FilterPanel({
 
   return (
     <aside style={{
-      width: 280, flexShrink: 0,
-      position: 'sticky', top: 84, alignSelf: 'flex-start',
+      width: isMobile ? '100%' : 280, flexShrink: 0,
+      position: isMobile ? 'static' : 'sticky', top: 84, alignSelf: 'flex-start',
       background: 'white', borderRadius: 16, border: '1px solid #E7E9EE',
       padding: 18, display: 'flex', flexDirection: 'column', gap: 18,
+      boxSizing: 'border-box',
     }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -159,6 +162,8 @@ export default function FilterPanel({
             options={specializationTags.map(t => ({ value: t.id, label: t.name }))}
             selected={filters.specializationTagIds}
             onToggle={toggleSpec}
+            compact
+            initialVisible={5}
           />
         )}
       </FilterField>
@@ -257,6 +262,8 @@ export default function FilterPanel({
                 options={disabilityTags.map(t => ({ value: t.id, label: t.name }))}
                 selected={filters.disabilityTagIds}
                 onToggle={toggleDisability}
+                compact
+                initialVisible={5}
               />
             )}
           </div>
@@ -270,6 +277,8 @@ export default function FilterPanel({
             options={methodologyTags.map(t => ({ value: t.id, label: t.name }))}
             selected={filters.methodologyTagIds}
             onToggle={toggleMethodology}
+            compact
+            initialVisible={5}
           />
         </FilterField>
       )}

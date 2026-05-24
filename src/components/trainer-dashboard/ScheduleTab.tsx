@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { TrainerDashboardSlot, TrainerSlotCount, TrainerSlotFilters, PatchSlotPayload } from '../../types';
 import { SlotFormat, SlotStatus } from '../../types';
 import DashAvatar from './DashAvatar';
+import { useIsMobile } from '../../hooks/useWindowWidth';
 
 const card: React.CSSProperties = {
   background: 'white', border: '1px solid #E7E9EE', borderRadius: 14, padding: 18,
@@ -19,7 +20,12 @@ const btnPrimary: React.CSSProperties = {
 const inputStyle: React.CSSProperties = {
   padding: '9px 11px', border: '1px solid #D9DCE2', borderRadius: 8,
   fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'white',
-  color: '#0F172A', boxSizing: 'border-box',
+  color: '#0F172A', boxSizing: 'border-box', width: '100%', minWidth: 0, maxWidth: '100%',
+  WebkitAppearance: 'none', appearance: 'none',
+};
+const formLabel: React.CSSProperties = {
+  display: 'flex', flexDirection: 'column', gap: 5,
+  fontSize: 12.5, fontWeight: 600, color: '#0F172A', minWidth: 0,
 };
 
 const WEEKDAYS_UK = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
@@ -288,7 +294,8 @@ function SlotFilterPanel({ onApply }: { onApply: (f: TrainerSlotFilters) => void
     fontSize: 10, fontWeight: 600, color: '#9CA3AF', marginBottom: 3, letterSpacing: '0.02em',
   };
   const filterInput: React.CSSProperties = {
-    ...inputStyle, fontSize: 12.5, width: '100%', minWidth: 0, padding: '0 10px', height: 34,
+    ...inputStyle, fontSize: 13, width: '100%', minWidth: 0, padding: '0 10px', height: 38,
+    textAlign: 'center', WebkitAppearance: 'none', appearance: 'none',
   };
 
   return (
@@ -337,7 +344,7 @@ function SlotFilterPanel({ onApply }: { onApply: (f: TrainerSlotFilters) => void
           {/* Price */}
           <div>
             <div style={sectionLabel}>Ціна (грн)</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <div style={{ minWidth: 0 }}>
                 <div style={fieldLabel}>Від</div>
                 <input type="number" placeholder="0" value={draft.minPrice} onChange={e => upd('minPrice', e.target.value)} style={filterInput} min="0" />
@@ -352,7 +359,7 @@ function SlotFilterPanel({ onApply }: { onApply: (f: TrainerSlotFilters) => void
           {/* Time */}
           <div>
             <div style={sectionLabel}>Час початку</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <div style={{ minWidth: 0 }}>
                 <div style={fieldLabel}>Від</div>
                 <input type="time" value={draft.timeFrom} onChange={e => upd('timeFrom', e.target.value)} style={filterInput} />
@@ -365,7 +372,7 @@ function SlotFilterPanel({ onApply }: { onApply: (f: TrainerSlotFilters) => void
           </div>
 
           {/* Actions */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <button type="button" onClick={handleReset} style={{ ...btnGhost, fontSize: 12.5, padding: '8px 10px' }}>
               Скинути
             </button>
@@ -407,6 +414,7 @@ function SlotCard({
   onUpdate: (id: string, payload: PatchSlotPayload) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }) {
+  const isMobile = useIsMobile();
   const [editing, setEditing] = useState(false);
   const [viewing, setViewing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -488,13 +496,15 @@ function SlotCard({
   const isReadonly = isPast || isCancelled;
 
   return (
-    <article style={{ ...card, padding: 16, opacity: isCancelled ? 0.72 : 1 }}>
+    <article style={{ ...card, padding: 16, opacity: isCancelled ? 0.72 : 1, overflow: 'hidden', minWidth: 0, maxWidth: '100%', boxSizing: 'border-box' }}>
       <div style={{
-        display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 14, alignItems: 'center',
+        display: 'grid',
+        gridTemplateColumns: isMobile ? 'auto 1fr' : 'auto 1fr auto',
+        gap: 14, alignItems: 'center',
       }}>
         <DashAvatar name={String(index)} size={48} />
 
-        <div>
+        <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 600, color: '#0F172A', marginBottom: 4 }}>
             {formatTime(slot.startDateTime)} · {slot.durationInMinutes} хв
           </div>
@@ -527,35 +537,70 @@ function SlotCard({
           </div>
         </div>
 
-        {isReadonly ? (
-          <button onClick={() => setViewing(v => !v)} style={btnGhost}>
-            {viewing ? 'Закрити' : 'Переглянути'}
-          </button>
-        ) : (
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={handleEdit} style={btnGhost}>
-              {editing ? 'Закрити' : 'Редагувати'}
+        {!isMobile && (
+          isReadonly ? (
+            <button onClick={() => setViewing(v => !v)} style={btnGhost}>
+              {viewing ? 'Закрити' : 'Переглянути'}
             </button>
-            <button
-              onClick={() => setConfirmDelete(true)}
-              disabled={deleting}
-              title="Видалити слот"
-              style={{
-                background: 'none', border: '1.5px solid #FECACA', borderRadius: 9,
-                cursor: 'pointer', padding: '8px 10px', color: '#EF4444',
-                opacity: deleting ? 0.4 : 1, flexShrink: 0,
-              }}
-            >
-              <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-                <path d="M10 11v6M14 11v6" />
-                <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
-              </svg>
-            </button>
-          </div>
+          ) : (
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={handleEdit} style={btnGhost}>
+                {editing ? 'Закрити' : 'Редагувати'}
+              </button>
+              <button
+                onClick={() => setConfirmDelete(true)}
+                disabled={deleting}
+                title="Видалити слот"
+                style={{
+                  background: 'none', border: '1.5px solid #FECACA', borderRadius: 9,
+                  cursor: 'pointer', padding: '8px 10px', color: '#EF4444',
+                  opacity: deleting ? 0.4 : 1, flexShrink: 0,
+                }}
+              >
+                <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                  <path d="M10 11v6M14 11v6" />
+                  <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+                </svg>
+              </button>
+            </div>
+          )
         )}
       </div>
+
+      {isMobile && (
+        <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+          {isReadonly ? (
+            <button onClick={() => setViewing(v => !v)} style={{ ...btnGhost, flex: 1 }}>
+              {viewing ? 'Закрити' : 'Переглянути'}
+            </button>
+          ) : (
+            <>
+              <button onClick={handleEdit} style={{ ...btnGhost, flex: 1 }}>
+                {editing ? 'Закрити' : 'Редагувати'}
+              </button>
+              <button
+                onClick={() => setConfirmDelete(true)}
+                disabled={deleting}
+                title="Видалити слот"
+                style={{
+                  background: 'none', border: '1.5px solid #FECACA', borderRadius: 9,
+                  cursor: 'pointer', padding: '8px 10px', color: '#EF4444',
+                  opacity: deleting ? 0.4 : 1, flexShrink: 0,
+                }}
+              >
+                <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                  <path d="M10 11v6M14 11v6" />
+                  <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+                </svg>
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       {viewing && isReadonly && (
         <div style={{
@@ -563,55 +608,105 @@ function SlotCard({
           display: 'flex', flexDirection: 'column', gap: 14,
         }}>
           {/* Date + start/end times */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 8, alignItems: 'end' }}>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>
-              Дата
-              <input type="date" disabled value={form.startDate} style={{ ...inputStyle, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
-            </label>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>
-              Початок
-              <input type="time" disabled value={form.startHour} style={{ ...inputStyle, width: 90, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
-            </label>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>
-              Кінець
-              <input type="time" disabled value={form.endHour} style={{ ...inputStyle, width: 90, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
-            </label>
-          </div>
+          {isMobile ? (
+            <>
+              <label style={formLabel}>
+                Дата
+                <input type="date" disabled value={form.startDate} style={{ ...inputStyle, width: '100%', background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
+              </label>
+              <label style={formLabel}>
+                Початок
+                <input type="time" disabled value={form.startHour} style={{ ...inputStyle, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
+              </label>
+              <label style={formLabel}>
+                Кінець
+                <input type="time" disabled value={form.endHour} style={{ ...inputStyle, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
+              </label>
+            </>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 8, alignItems: 'end' }}>
+              <label style={formLabel}>
+                Дата
+                <input type="date" disabled value={form.startDate} style={{ ...inputStyle, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
+              </label>
+              <label style={formLabel}>
+                Початок
+                <input type="time" disabled value={form.startHour} style={{ ...inputStyle, width: 90, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
+              </label>
+              <label style={formLabel}>
+                Кінець
+                <input type="time" disabled value={form.endHour} style={{ ...inputStyle, width: 90, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
+              </label>
+            </div>
+          )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>
-              Формат
-              <select disabled value={form.format} style={{ ...inputStyle, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }}>
-                <option value={SlotFormat.Online}>Онлайн</option>
-                <option value={SlotFormat.Offline}>Офлайн</option>
-              </select>
-            </label>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>
-              Ціна (грн)
-              <input type="number" disabled value={form.price} style={{ ...inputStyle, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
-            </label>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>
-              Макс. клієнтів
-              <input type="number" disabled value={form.maxClients} style={{ ...inputStyle, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
-            </label>
-          </div>
+          {isMobile ? (
+            <>
+              <label style={formLabel}>
+                Формат
+                <select disabled value={form.format} style={{ ...inputStyle, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }}>
+                  <option value={SlotFormat.Online}>Онлайн</option>
+                  <option value={SlotFormat.Offline}>Офлайн</option>
+                </select>
+              </label>
+              <label style={formLabel}>
+                Ціна (грн)
+                <input type="number" disabled value={form.price} style={{ ...inputStyle, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
+              </label>
+              <label style={formLabel}>
+                Макс. клієнтів
+                <input type="number" disabled value={form.maxClients} style={{ ...inputStyle, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
+              </label>
+            </>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+              <label style={formLabel}>
+                Формат
+                <select disabled value={form.format} style={{ ...inputStyle, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }}>
+                  <option value={SlotFormat.Online}>Онлайн</option>
+                  <option value={SlotFormat.Offline}>Офлайн</option>
+                </select>
+              </label>
+              <label style={formLabel}>
+                Ціна (грн)
+                <input type="number" disabled value={form.price} style={{ ...inputStyle, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
+              </label>
+              <label style={formLabel}>
+                Макс. клієнтів
+                <input type="number" disabled value={form.maxClients} style={{ ...inputStyle, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
+              </label>
+            </div>
+          )}
 
-          <label style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>
+          <label style={formLabel}>
             Опис (необов'язково)
             <input disabled value={form.description} placeholder="Наприклад: Візьміть каремат" style={{ ...inputStyle, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
           </label>
 
           {Number(form.format) === SlotFormat.Offline && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>
-                Назва залу
-                <input disabled value={form.gymName} style={{ ...inputStyle, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
-              </label>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>
-                Адреса
-                <input disabled value={form.gymAddress} style={{ ...inputStyle, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
-              </label>
-            </div>
+            isMobile ? (
+              <>
+                <label style={formLabel}>
+                  Назва залу
+                  <input disabled value={form.gymName} style={{ ...inputStyle, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
+                </label>
+                <label style={formLabel}>
+                  Адреса
+                  <input disabled value={form.gymAddress} style={{ ...inputStyle, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
+                </label>
+              </>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <label style={formLabel}>
+                  Назва залу
+                  <input disabled value={form.gymName} style={{ ...inputStyle, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
+                </label>
+                <label style={formLabel}>
+                  Адреса
+                  <input disabled value={form.gymAddress} style={{ ...inputStyle, background: '#F9FAFB', color: '#6B7280', cursor: 'not-allowed' }} />
+                </label>
+              </div>
+            )
           )}
         </div>
       )}
@@ -670,72 +765,141 @@ function SlotCard({
           display: 'flex', flexDirection: 'column', gap: 14,
         }}>
           {/* Date + start/end times */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 8, alignItems: 'end' }}>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>
-              Дата
-              <input
-                type="date"
-                value={form.startDate}
-                onChange={e => upd('startDate', e.target.value)}
-                style={inputStyle}
-              />
-            </label>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>
-              Початок
-              <input
-                type="time"
-                value={form.startHour}
-                onChange={e => upd('startHour', e.target.value)}
-                style={{ ...inputStyle, width: 90 }}
-              />
-            </label>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>
-              Кінець
-              <input
-                type="time"
-                value={form.endHour}
-                onChange={e => upd('endHour', e.target.value)}
-                style={{ ...inputStyle, width: 90 }}
-              />
-            </label>
-          </div>
+          {isMobile ? (
+            <>
+              <label style={formLabel}>
+                Дата
+                <input
+                  type="date"
+                  value={form.startDate}
+                  onChange={e => upd('startDate', e.target.value)}
+                  style={{ ...inputStyle, width: '100%' }}
+                />
+              </label>
+              <label style={formLabel}>
+                Початок
+                <input
+                  type="time"
+                  value={form.startHour}
+                  onChange={e => upd('startHour', e.target.value)}
+                  style={inputStyle}
+                />
+              </label>
+              <label style={formLabel}>
+                Кінець
+                <input
+                  type="time"
+                  value={form.endHour}
+                  onChange={e => upd('endHour', e.target.value)}
+                  style={inputStyle}
+                />
+              </label>
+            </>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 8, alignItems: 'end' }}>
+              <label style={formLabel}>
+                Дата
+                <input
+                  type="date"
+                  value={form.startDate}
+                  onChange={e => upd('startDate', e.target.value)}
+                  style={inputStyle}
+                />
+              </label>
+              <label style={formLabel}>
+                Початок
+                <input
+                  type="time"
+                  value={form.startHour}
+                  onChange={e => upd('startHour', e.target.value)}
+                  style={{ ...inputStyle, width: 90 }}
+                />
+              </label>
+              <label style={formLabel}>
+                Кінець
+                <input
+                  type="time"
+                  value={form.endHour}
+                  onChange={e => upd('endHour', e.target.value)}
+                  style={{ ...inputStyle, width: 90 }}
+                />
+              </label>
+            </div>
+          )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>
-              Формат
-              <select
-                value={form.format}
-                onChange={e => upd('format', Number(e.target.value) as SlotFormat)}
-                style={{ ...inputStyle, cursor: 'pointer' }}
-              >
-                <option value={SlotFormat.Online}>Онлайн</option>
-                <option value={SlotFormat.Offline}>Офлайн</option>
-              </select>
-            </label>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>
-              Ціна (грн)
-              <input
-                type="number"
-                value={form.price}
-                onChange={e => upd('price', e.target.value)}
-                style={inputStyle}
-                min="0.01"
-              />
-            </label>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>
-              Макс. клієнтів
-              <input
-                type="number"
-                value={form.maxClients}
-                onChange={e => upd('maxClients', e.target.value)}
-                style={inputStyle}
-                min="1"
-                max="100"
-              />
-            </label>
-          </div>
+          {isMobile ? (
+            <>
+              <label style={formLabel}>
+                Формат
+                <select
+                  value={form.format}
+                  onChange={e => upd('format', Number(e.target.value) as SlotFormat)}
+                  style={{ ...inputStyle, cursor: 'pointer' }}
+                >
+                  <option value={SlotFormat.Online}>Онлайн</option>
+                  <option value={SlotFormat.Offline}>Офлайн</option>
+                </select>
+              </label>
+              <label style={formLabel}>
+                Ціна (грн)
+                <input
+                  type="number"
+                  value={form.price}
+                  onChange={e => upd('price', e.target.value)}
+                  style={inputStyle}
+                  min="0.01"
+                />
+              </label>
+              <label style={formLabel}>
+                Макс. клієнтів
+                <input
+                  type="number"
+                  value={form.maxClients}
+                  onChange={e => upd('maxClients', e.target.value)}
+                  style={inputStyle}
+                  min="1"
+                  max="100"
+                />
+              </label>
+            </>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+              <label style={formLabel}>
+                Формат
+                <select
+                  value={form.format}
+                  onChange={e => upd('format', Number(e.target.value) as SlotFormat)}
+                  style={{ ...inputStyle, cursor: 'pointer' }}
+                >
+                  <option value={SlotFormat.Online}>Онлайн</option>
+                  <option value={SlotFormat.Offline}>Офлайн</option>
+                </select>
+              </label>
+              <label style={formLabel}>
+                Ціна (грн)
+                <input
+                  type="number"
+                  value={form.price}
+                  onChange={e => upd('price', e.target.value)}
+                  style={inputStyle}
+                  min="0.01"
+                />
+              </label>
+              <label style={formLabel}>
+                Макс. клієнтів
+                <input
+                  type="number"
+                  value={form.maxClients}
+                  onChange={e => upd('maxClients', e.target.value)}
+                  style={inputStyle}
+                  min="1"
+                  max="100"
+                />
+              </label>
+            </div>
+          )}
 
-          <label style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>
+          <label style={formLabel}>
             Опис (необов'язково)
             <input
               value={form.description}
@@ -746,24 +910,45 @@ function SlotCard({
           </label>
 
           {Number(form.format) === SlotFormat.Offline && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>
-                Назва залу
-                <input
-                  value={form.gymName}
-                  onChange={e => upd('gymName', e.target.value)}
-                  style={inputStyle}
-                />
-              </label>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>
-                Адреса
-                <input
-                  value={form.gymAddress}
-                  onChange={e => upd('gymAddress', e.target.value)}
-                  style={inputStyle}
-                />
-              </label>
-            </div>
+            isMobile ? (
+              <>
+                <label style={formLabel}>
+                  Назва залу
+                  <input
+                    value={form.gymName}
+                    onChange={e => upd('gymName', e.target.value)}
+                    style={inputStyle}
+                  />
+                </label>
+                <label style={formLabel}>
+                  Адреса
+                  <input
+                    value={form.gymAddress}
+                    onChange={e => upd('gymAddress', e.target.value)}
+                    style={inputStyle}
+                  />
+                </label>
+              </>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <label style={formLabel}>
+                  Назва залу
+                  <input
+                    value={form.gymName}
+                    onChange={e => upd('gymName', e.target.value)}
+                    style={inputStyle}
+                  />
+                </label>
+                <label style={formLabel}>
+                  Адреса
+                  <input
+                    value={form.gymAddress}
+                    onChange={e => upd('gymAddress', e.target.value)}
+                    style={inputStyle}
+                  />
+                </label>
+              </div>
+            )
           )}
 
           {saveError && (
@@ -797,6 +982,7 @@ interface Props {
 export default function ScheduleTab({ slots, slotCount, isLoading, error, onUpdateSlot, onDeleteSlot, onFiltersChange }: Props) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [panelFilters, setPanelFilters] = useState<TrainerSlotFilters>({});
+  const isMobile = useIsMobile();
 
   const handleDateSelect = (ymd: string | null) => {
     setSelectedDate(ymd);
@@ -810,7 +996,7 @@ export default function ScheduleTab({ slots, slotCount, isLoading, error, onUpda
 
   if (isLoading) {
     return (
-      <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 20, alignItems: 'flex-start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '280px 1fr', gap: 20, alignItems: 'flex-start' }}>
         <div style={{ ...card, height: 320, background: '#F8F9FB' }} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {[1, 2, 3].map(i => (
@@ -836,7 +1022,7 @@ export default function ScheduleTab({ slots, slotCount, isLoading, error, onUpda
     : null;
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 20, alignItems: 'flex-start' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '280px 1fr', gap: 20, alignItems: 'flex-start' }}>
       {/* Left column: calendar + counts */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <CalendarWidget
@@ -863,7 +1049,7 @@ export default function ScheduleTab({ slots, slotCount, isLoading, error, onUpda
       </div>
 
       {/* Right column: slot list */}
-      <div style={{ maxHeight: 500, overflowY: 'auto', paddingRight: 4 }}>
+      <div style={{ maxHeight: isMobile ? 'none' : 500, overflowY: isMobile ? 'visible' : 'auto', paddingRight: 4, minWidth: 0 }}>
         {selectedLabel && (
           <div style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{
@@ -884,16 +1070,16 @@ export default function ScheduleTab({ slots, slotCount, isLoading, error, onUpda
             </div>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 22, minWidth: 0 }}>
             {groups.map(group => (
-              <div key={group.dateLabel}>
+              <div key={group.dateLabel} style={{ minWidth: 0 }}>
                 <h3 style={{
                   margin: '0 0 10px', fontSize: 12.5, fontWeight: 700,
                   color: '#6B7280', letterSpacing: '0.05em', textTransform: 'uppercase',
                 }}>
                   {group.dateLabel}
                 </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 }}>
                   {group.items.map((slot, idx) => (
                     <SlotCard key={slot.id} slot={slot} index={idx + 1} onUpdate={onUpdateSlot} onDelete={onDeleteSlot} />
                   ))}

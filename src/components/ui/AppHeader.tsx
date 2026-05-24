@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../../contexts/AuthContext';
 import Icon from './Icon';
+import { useIsMobile } from '../../hooks/useWindowWidth';
 
 const CHEVRON_DOWN = 'M6 9l6 6 6-6';
 
@@ -22,6 +23,7 @@ export default function AppHeader() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -50,7 +52,7 @@ export default function AppHeader() {
       borderBottom: '1px solid #E7E9EE',
     }}>
       <div style={{
-        maxWidth: 1440, margin: '0 auto', padding: '14px 32px',
+        maxWidth: 1440, margin: '0 auto', padding: isMobile ? '12px 16px' : '14px 32px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <Link to={homePath} style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
@@ -107,9 +109,11 @@ export default function AppHeader() {
                     color: 'white', fontSize: 12, fontWeight: 700, flexShrink: 0,
                   }}>{initials}</div>
                 )}
-                <span style={{ fontSize: 13.5, fontWeight: 500, color: '#0F172A' }}>
-                  {user.firstName}
-                </span>
+                {!isMobile && (
+                  <span style={{ fontSize: 13.5, fontWeight: 500, color: '#0F172A' }}>
+                    {user.firstName}
+                  </span>
+                )}
                 <span style={{
                   color: '#9CA3AF',
                   transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',

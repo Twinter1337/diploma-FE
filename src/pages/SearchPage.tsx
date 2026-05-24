@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTrainerSearch } from '../hooks/useTrainerSearch';
 import type { SortOption } from '../hooks/useTrainerSearch';
@@ -6,6 +7,7 @@ import FilterPanel from '../components/search/FilterPanel';
 import TrainerCard from '../components/search/TrainerCard';
 import Icon from '../components/ui/Icon';
 import AppHeader from '../components/ui/AppHeader';
+import { useIsMobile } from '../hooks/useWindowWidth';
 
 // ── Sort pill ────────────────────────────────────────────────────────────────
 
@@ -139,6 +141,8 @@ function StatsBar({ totalCount }: { totalCount: number }) {
 export default function SearchPage() {
   const { state } = useLocation();
   const initialCity = (state as { city?: string } | null)?.city ?? '';
+  const isMobile = useIsMobile();
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const {
     filters, setFilters,
@@ -202,26 +206,56 @@ export default function SearchPage() {
     <div style={{ background: '#F8F9FB', minHeight: '100vh' }}>
       <AppHeader />
 
-      <main style={{ maxWidth: 1440, margin: '0 auto', padding: '28px 32px 48px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 22 }}>
+      <main style={{ maxWidth: 1440, margin: '0 auto', padding: isMobile ? '16px 16px 40px' : '28px 32px 48px' }}>
+        <div style={{
+          display: 'flex', alignItems: isMobile ? 'flex-start' : 'center',
+          flexDirection: isMobile ? 'column' : 'row',
+          gap: isMobile ? 12 : 20, marginBottom: 22,
+        }}>
           <div style={{ flexShrink: 0 }}>
             <h1 style={{
-              margin: 0, fontSize: 28, fontWeight: 700, color: '#0F172A',
+              margin: 0, fontSize: isMobile ? 22 : 28, fontWeight: 700, color: '#0F172A',
               letterSpacing: '-0.025em', fontFamily: 'var(--display)',
             }}>Знайдіть свого тренера</h1>
-            <p style={{ margin: '6px 0 0', fontSize: 14.5, color: '#6B7280' }}>
+            <p style={{ margin: '6px 0 0', fontSize: 14, color: '#6B7280' }}>
               {isLoading
                 ? 'Пошук…'
                 : `${totalCount} ${pluralTrainers(totalCount)} за вашими критеріями`}
             </p>
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <StatsBar totalCount={totalCount} />
-          </div>
+          {!isMobile && (
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <StatsBar totalCount={totalCount} />
+            </div>
+          )}
         </div>
 
-        <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
-          <FilterPanel
+        {isMobile && (
+          <button
+            type="button"
+            onClick={() => setFiltersOpen(o => !o)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '9px 14px', marginBottom: 14,
+              background: 'white', border: '1px solid #E7E9EE', borderRadius: 10,
+              fontSize: 13.5, fontWeight: 600, color: '#0F172A',
+              cursor: 'pointer', fontFamily: 'inherit',
+            }}
+          >
+            <Icon d="M3 6h18M6 12h12M10 18h4" size={16} />
+            Фільтри
+            {activeFilterCount > 0 && (
+              <span style={{
+                fontSize: 11, fontWeight: 700, background: 'var(--accent-600)',
+                color: 'white', padding: '2px 7px', borderRadius: 999,
+              }}>{activeFilterCount}</span>
+            )}
+            <Icon d={filtersOpen ? 'M18 15l-6-6-6 6' : 'M6 9l6 6 6-6'} size={14} />
+          </button>
+        )}
+
+        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 24, alignItems: 'flex-start' }}>
+          {(!isMobile || filtersOpen) && <FilterPanel
             filters={filters}
             setFilters={setFilters}
             onApply={applyFilters}
@@ -233,7 +267,7 @@ export default function SearchPage() {
             tagsLoading={tagsLoading}
             tagsError={tagsError}
             onRetryTags={() => { void fetchTags(); }}
-          />
+          />}
 
           <section style={{ flex: 1, minWidth: 0 }}>
             {/* Sort row + active chips */}
@@ -310,7 +344,7 @@ export default function SearchPage() {
             {isLoading && (
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, minmax(0, 1fr))',
                 gap: 18,
               }}>
                 {Array.from({ length: 9 }).map((_, i) => (
@@ -327,7 +361,7 @@ export default function SearchPage() {
             {!isLoading && trainers.length > 0 && (
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, minmax(0, 1fr))',
                 gap: 18,
               }}>
                 {trainers.map(t => <TrainerCard key={t.id} trainer={t} />)}

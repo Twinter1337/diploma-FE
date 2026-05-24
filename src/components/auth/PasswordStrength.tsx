@@ -17,7 +17,7 @@ interface PasswordStrengthProps {
 export default function PasswordStrength({ value }: PasswordStrengthProps) {
   const s = getScore(value);
   return (
-    <div style={{ marginTop: -10, display: 'flex', alignItems: 'center', gap: 10 }}>
+    <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
       <div style={{ flex: 1, display: 'flex', gap: 4 }}>
         {[0, 1, 2, 3].map((i) => (
           <div

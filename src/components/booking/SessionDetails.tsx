@@ -1,6 +1,7 @@
 import type { ScheduleSlot, BookingTrainerSummary } from '../../types';
 import { SlotFormat } from '../../types';
 import Icon from '../ui/Icon';
+import { useIsMobile } from '../../hooks/useWindowWidth';
 
 function formatDateUk(iso: string) {
   return new Intl.DateTimeFormat('uk-UA', {
@@ -104,6 +105,7 @@ interface Props {
 }
 
 export default function SessionDetails({ slot, trainer }: Props) {
+  const isMobile = useIsMobile();
   const trainerName = `${trainer.firstName} ${trainer.lastName}`;
   const locationValue =
     slot.format === SlotFormat.Offline && slot.gymName ? slot.gymName : 'Онлайн';
@@ -116,7 +118,7 @@ export default function SessionDetails({ slot, trainer }: Props) {
         background: 'white',
         border: '1px solid #E7E9EE',
         borderRadius: 16,
-        padding: 24,
+        padding: isMobile ? 18 : 24,
       }}
     >
       <h2
@@ -137,17 +139,42 @@ export default function SessionDetails({ slot, trainer }: Props) {
         style={{
           display: 'flex',
           gap: 14,
-          alignItems: 'center',
+          alignItems: 'flex-start',
           padding: '14px 0',
           borderBottom: '1px solid #EDEFF3',
         }}
       >
-        <TrainerAvatar name={trainerName} size={56} />
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 15.5, fontWeight: 600, color: '#0F172A', letterSpacing: '-0.01em' }}>
-            {trainerName}
+        <TrainerAvatar name={trainerName} size={isMobile ? 44 : 56} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            gap: 8,
+          }}>
+            <div style={{ fontSize: 15.5, fontWeight: 600, color: '#0F172A', letterSpacing: '-0.01em', minWidth: 0 }}>
+              {trainerName}
+            </div>
+            {!isMobile && (
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: '#9CA3AF',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  padding: '3px 8px',
+                  borderRadius: 6,
+                  background: '#F8F9FB',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                }}
+              >
+                Не редагується
+              </span>
+            )}
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6, alignItems: 'center' }}>
             {trainer.specializations.map((s) => (
               <span
                 key={s}
@@ -158,6 +185,7 @@ export default function SessionDetails({ slot, trainer }: Props) {
                   borderRadius: 999,
                   background: '#F1F2F4',
                   color: '#3F4651',
+                  whiteSpace: 'nowrap',
                 }}
               >
                 {s}
@@ -171,20 +199,6 @@ export default function SessionDetails({ slot, trainer }: Props) {
             )}
           </div>
         </div>
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: '#9CA3AF',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            padding: '3px 8px',
-            borderRadius: 6,
-            background: '#F8F9FB',
-          }}
-        >
-          Не редагується
-        </span>
       </div>
 
       <DetailRow

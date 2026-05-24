@@ -2,18 +2,24 @@ import type { CSSProperties } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import LeftPanel from '../components/auth/LeftPanel';
 import ResetPasswordForm from '../components/auth/ResetPasswordForm';
+import { useIsMobile } from '../hooks/useWindowWidth';
 
 export default function ResetPasswordPage() {
   const [params] = useSearchParams();
   const token = params.get('token');
+  const isMobile = useIsMobile();
 
   return (
-    <div style={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
-      <LeftPanel />
+    <div style={{
+      minHeight: '100vh', display: 'grid',
+      gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+    }}>
+      {!isMobile && <LeftPanel />}
 
       <div style={{
         display: 'flex', flexDirection: 'column', justifyContent: 'center',
-        padding: '48px 56px', background: 'white', overflowY: 'auto',
+        padding: isMobile ? '32px 20px' : '48px 56px',
+        background: 'white', overflowY: 'auto',
       }}>
         <div style={{ width: '100%', maxWidth: 440, margin: '0 auto' }}>
           {!token ? (

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { TrainerClient, TrainerBooking } from '../../types';
 import { SlotFormat, TagCategory } from '../../types';
+import { useIsMobile } from '../../hooks/useWindowWidth';
 import { getClientBookingsForTrainer } from '../../services/trainerService';
 import DashAvatar from './DashAvatar';
 import SessionNotes from '../SessionNotes';
@@ -50,6 +51,7 @@ interface Props {
 export default function ClientsTab({ clients, trainerId, currentUserId, isLoading, error }: Props) {
   const [selected, setSelected] = useState<TrainerClient | null>(null);
   const [search, setSearch] = useState('');
+  const isMobile = useIsMobile();
 
   const [history, setHistory] = useState<TrainerBooking[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -72,7 +74,7 @@ export default function ClientsTab({ clients, trainerId, currentUserId, isLoadin
   if (isLoading) {
     return (
       <div style={{ display: 'flex', gap: 20 }}>
-        <div style={{ width: 280, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ width: isMobile ? '100%' : 280, display: 'flex', flexDirection: 'column', gap: 8 }}>
           {[1, 2, 3, 4, 5].map(i => (
             <div key={i} style={{ height: 64, background: '#F8F9FB', borderRadius: 10 }} />
           ))}
@@ -93,6 +95,9 @@ export default function ClientsTab({ clients, trainerId, currentUserId, isLoadin
     c.clientFullName.toLowerCase().includes(search.toLowerCase()),
   );
 
+  const showList = !isMobile || !selected;
+  const showDetail = !isMobile || !!selected;
+
   return (
     <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
       {disputeFor && selected && (
@@ -104,10 +109,10 @@ export default function ClientsTab({ clients, trainerId, currentUserId, isLoadin
       )}
 
       {/* ── Left: client list ── */}
-      <div style={{
-        width: 280, flexShrink: 0,
-        position: 'sticky', top: 80,
-        maxHeight: 'calc(100vh - 120px)', overflowY: 'auto',
+      {showList && <div style={{
+        width: isMobile ? '100%' : 280, flexShrink: 0,
+        position: isMobile ? 'static' : 'sticky', top: 80,
+        maxHeight: isMobile ? 'none' : 'calc(100vh - 120px)', overflowY: isMobile ? 'visible' : 'auto',
         display: 'flex', flexDirection: 'column', gap: 6,
       }}>
         {/* Search */}
@@ -166,10 +171,26 @@ export default function ClientsTab({ clients, trainerId, currentUserId, isLoadin
             );
           })
         )}
-      </div>
+      </div>}
 
       {/* ── Right: detail panel ── */}
-      <div style={{ flex: 1, minWidth: 0 }}>
+      {showDetail && <div style={{ flex: 1, minWidth: 0, width: isMobile ? '100%' : undefined }}>
+        {isMobile && selected && (
+          <button
+            onClick={() => setSelected(null)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: 13.5, fontWeight: 600, color: 'var(--accent-600)',
+              fontFamily: 'inherit', padding: '0 0 14px', marginBottom: 2,
+            }}
+          >
+            <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Назад до списку
+          </button>
+        )}
         {!selected ? (
           <div style={{
             ...card, padding: '60px 24px', textAlign: 'center',
@@ -292,7 +313,7 @@ export default function ClientsTab({ clients, trainerId, currentUserId, isLoadin
 
           </div>
         )}
-      </div>
+      </div>}
 
     </div>
   );

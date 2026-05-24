@@ -3,19 +3,26 @@ import type { CSSProperties } from 'react';
 import LeftPanel from '../components/auth/LeftPanel';
 import LoginForm from '../components/auth/LoginForm';
 import SignupForm from '../components/auth/SignupForm';
+import { useIsMobile } from '../hooks/useWindowWidth';
 
 type Tab = 'login' | 'signup';
 
 export default function AuthPage() {
   const [tab, setTab] = useState<Tab>('login');
+  const isMobile = useIsMobile();
 
   return (
-    <div style={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
-      <LeftPanel />
+    <div style={{
+      minHeight: isMobile ? '100svh' : '100vh', display: 'grid',
+      gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+    }}>
+      {!isMobile && <LeftPanel />}
 
       <div style={{
-        display: 'flex', flexDirection: 'column', justifyContent: 'center',
-        padding: '48px 56px', background: 'white', overflowY: 'auto',
+        display: 'flex', flexDirection: 'column',
+        justifyContent: isMobile ? 'flex-start' : 'center',
+        padding: isMobile ? '32px 20px' : '48px 56px',
+        background: 'white', overflowY: 'auto',
       }}>
         <div style={{ width: '100%', maxWidth: 440, margin: '0 auto' }}>
           <div style={{

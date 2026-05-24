@@ -1,7 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { useIsMobile } from '../hooks/useWindowWidth';
 
 export default function BookingCancelPage() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   return (
     <div
@@ -19,7 +21,7 @@ export default function BookingCancelPage() {
           background: 'white',
           border: '1px solid #E7E9EE',
           borderRadius: 20,
-          padding: '48px 40px',
+          padding: isMobile ? '32px 20px' : '48px 40px',
           maxWidth: 480,
           width: '100%',
           textAlign: 'center',

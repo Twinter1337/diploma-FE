@@ -1,3 +1,5 @@
+import { useIsMobile } from '../../hooks/useWindowWidth';
+
 export const REMINDER_OPTIONS = [
   { minutes: 10, label: 'За 10 хвилин' },
   { minutes: 30, label: 'За 30 хвилин' },
@@ -13,13 +15,14 @@ interface Props {
 }
 
 export default function ReminderSection({ value, onChange }: Props) {
+  const isMobile = useIsMobile();
   return (
     <section
       style={{
         background: 'white',
         border: '1px solid #E7E9EE',
         borderRadius: 16,
-        padding: 24,
+        padding: isMobile ? 18 : 24,
       }}
     >
       <h2
@@ -37,7 +40,11 @@ export default function ReminderSection({ value, onChange }: Props) {
       <p style={{ margin: '6px 0 16px', fontSize: 13.5, color: '#6B7280' }}>
         Ми надішлемо вам повідомлення на електронну адресу перед заняттям
       </p>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(3, minmax(0, 1fr))',
+        gap: 8,
+      }}>
         {REMINDER_OPTIONS.map((o) => {
           const active = value === o.minutes;
           return (
@@ -47,12 +54,13 @@ export default function ReminderSection({ value, onChange }: Props) {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 10,
-                padding: '12px 14px',
+                padding: isMobile ? '10px 12px' : '12px 14px',
                 borderRadius: 10,
                 background: active ? 'var(--accent-50)' : 'white',
                 border: `1.5px solid ${active ? 'var(--accent-600)' : '#E7E9EE'}`,
                 cursor: 'pointer',
                 transition: 'all 120ms',
+                minWidth: 0,
               }}
             >
               <input
@@ -60,13 +68,17 @@ export default function ReminderSection({ value, onChange }: Props) {
                 name="reminder"
                 checked={active}
                 onChange={() => onChange(o.minutes)}
-                style={{ width: 16, height: 16, accentColor: 'var(--accent-600)', margin: 0, cursor: 'pointer' }}
+                style={{ width: 16, height: 16, accentColor: 'var(--accent-600)', margin: 0, cursor: 'pointer', flexShrink: 0 }}
               />
               <span
                 style={{
                   fontSize: 13,
                   fontWeight: active ? 600 : 500,
                   color: active ? 'var(--accent-700)' : '#3F4651',
+                  minWidth: 0,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
                 }}
               >
                 {o.label}

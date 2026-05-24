@@ -9,6 +9,7 @@ import type { PostTrainerSlotPayload } from '../services/trainerService';
 import Icon from '../components/ui/Icon';
 import AppHeader from '../components/ui/AppHeader';
 import NewSlotModal from '../components/trainer-dashboard/NewSlotModal';
+import { useIsMobile } from '../hooks/useWindowWidth';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -100,16 +101,17 @@ interface CoverProps {
 
 function Cover({ firstName, lastName, hue, avatarUrl, verificationStatus, isAccessible, specializationTags, rating, numOfReviews, city, experienceYears, minPrice, onBook }: CoverProps) {
   const [imgError, setImgError] = useState(false);
+  const isMobile = useIsMobile();
   const showGradient = !avatarUrl || imgError;
   const fullName = `${firstName} ${lastName}`.trim();
   const initials = [firstName[0], lastName[0]].filter(Boolean).join('');
   const isVerified = verificationStatus === VerificationStatus.Verified;
 
   return (
-    <div style={{ position: 'relative', marginTop: 0 }}>
+    <div style={{ position: 'relative', marginTop: 0, minHeight: isMobile ? 360 : 280 }}>
       {/* Gradient backdrop */}
       <div style={{
-        position: 'absolute', inset: 0, height: 280, overflow: 'hidden',
+        position: 'absolute', inset: 0, overflow: 'hidden',
         background: `linear-gradient(135deg, hsl(${hue} 60% 55%), hsl(${(hue + 60) % 360} 55% 40%))`,
       }}>
         <div style={{
@@ -124,156 +126,253 @@ function Cover({ firstName, lastName, hue, avatarUrl, verificationStatus, isAcce
         }} />
       </div>
 
-      {/* Breadcrumb */}
-      <div style={{
-        position: 'relative', maxWidth: 1280, margin: '0 auto',
-        padding: '20px 32px 0', color: 'rgba(255,255,255,0.85)',
-        fontSize: 13, display: 'inline-flex', gap: 8, alignItems: 'center',
-      }}>
-        <Link to="/search" style={{ color: 'inherit', textDecoration: 'none' }}>Тренери</Link>
-        <span style={{ opacity: 0.6 }}>/</span>
-        <span style={{ color: 'white' }}>{fullName}</span>
-      </div>
+      {/* Breadcrumb — desktop only */}
+      {!isMobile && (
+        <div style={{
+          position: 'relative', maxWidth: 1280, margin: '0 auto',
+          padding: '20px 32px 0', color: 'rgba(255,255,255,0.85)',
+          fontSize: 13, display: 'inline-flex', gap: 8, alignItems: 'center',
+        }}>
+          <Link to="/search" style={{ color: 'inherit', textDecoration: 'none' }}>Тренери</Link>
+          <span style={{ opacity: 0.6 }}>/</span>
+          <span style={{ color: 'white' }}>{fullName}</span>
+        </div>
+      )}
 
       {/* Content */}
-      <div style={{
-        position: 'relative', maxWidth: 1280, margin: '0 auto',
-        padding: '40px 32px 28px',
-        display: 'grid', gridTemplateColumns: 'auto 1fr auto',
-        gap: 28, alignItems: 'flex-end',
-      }}>
-        {/* Avatar */}
+      {isMobile ? (
+        /* ── Mobile: centered column layout ── */
         <div style={{
-          width: 168, height: 168, borderRadius: '50%',
-          background: showGradient
-            ? `linear-gradient(135deg, hsl(${hue} 60% 62%), hsl(${(hue + 35) % 360} 65% 45%))`
-            : undefined,
-          position: 'relative', overflow: 'hidden', flexShrink: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          border: '5px solid white',
-          boxShadow: '0 12px 32px rgba(15, 23, 42, 0.18)',
+          position: 'relative', padding: '20px 16px 24px',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 10,
         }}>
-          {showGradient ? (
-            <>
-              <div style={{
-                position: 'absolute', inset: 0,
-                background: `radial-gradient(120% 80% at 50% 110%, rgba(0,0,0,.25), transparent 60%),
-                             radial-gradient(60% 50% at 30% 25%, rgba(255,255,255,.35), transparent 70%)`,
-              }} />
-              <span style={{
-                color: 'white', fontWeight: 700, fontSize: 168 * 0.36,
-                letterSpacing: '-0.02em', fontFamily: 'var(--display)',
-                textShadow: '0 2px 12px rgba(0,0,0,.2)',
-              }}>{initials}</span>
-            </>
-          ) : (
-            <img
-              src={avatarUrl!}
-              alt={fullName}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              onError={() => setImgError(true)}
-            />
-          )}
-        </div>
-
-        {/* Info */}
-        <div style={{ minWidth: 0, paddingBottom: 8 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-            {isVerified && (
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '5px 11px 5px 9px', borderRadius: 999,
-                background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)',
-                fontSize: 12.5, fontWeight: 600, color: 'var(--accent-700)',
-              }}>
-                <span style={{ color: 'var(--accent-600)', display: 'inline-flex' }}><VerifiedBadge /></span>
-                Верифіковано
-              </span>
-            )}
-            {isAccessible && (
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '5px 11px 5px 9px', borderRadius: 999,
-                background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)',
-                fontSize: 12.5, fontWeight: 600, color: '#0F172A',
-              }}>
-                <Icon d="M12 4a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM19 13l-4 0-1-3-3 0 0 5 5 0 1 6M11 12a4 4 0 1 0 4 6" size={14} />
-                Інклюзивний тренер
-              </span>
+          {/* Avatar */}
+          <div style={{
+            width: 96, height: 96, borderRadius: '50%',
+            background: showGradient
+              ? `linear-gradient(135deg, hsl(${hue} 60% 62%), hsl(${(hue + 35) % 360} 65% 45%))`
+              : undefined,
+            position: 'relative', overflow: 'hidden', flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: '4px solid white',
+            boxShadow: '0 8px 24px rgba(15,23,42,0.2)',
+          }}>
+            {showGradient ? (
+              <>
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: `radial-gradient(120% 80% at 50% 110%, rgba(0,0,0,.25), transparent 60%),
+                               radial-gradient(60% 50% at 30% 25%, rgba(255,255,255,.35), transparent 70%)`,
+                }} />
+                <span style={{
+                  color: 'white', fontWeight: 700, fontSize: 34,
+                  letterSpacing: '-0.02em', fontFamily: 'var(--display)',
+                  textShadow: '0 2px 12px rgba(0,0,0,.2)',
+                }}>{initials}</span>
+              </>
+            ) : (
+              <img src={avatarUrl!} alt={fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setImgError(true)} />
             )}
           </div>
 
+          {/* Badges */}
+          {(isVerified || isAccessible) && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 6 }}>
+              {isVerified && (
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  padding: '4px 10px 4px 8px', borderRadius: 999,
+                  background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)',
+                  fontSize: 12, fontWeight: 600, color: 'var(--accent-700)',
+                }}>
+                  <span style={{ color: 'var(--accent-600)', display: 'inline-flex' }}><VerifiedBadge /></span>
+                  Верифіковано
+                </span>
+              )}
+              {isAccessible && (
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  padding: '4px 10px 4px 8px', borderRadius: 999,
+                  background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)',
+                  fontSize: 12, fontWeight: 600, color: '#0F172A',
+                }}>
+                  <Icon d="M12 4a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM19 13l-4 0-1-3-3 0 0 5 5 0 1 6M11 12a4 4 0 1 0 4 6" size={13} />
+                  Інклюзивний
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Name */}
           <h1 style={{
-            margin: 0, fontSize: 40, fontWeight: 700, color: 'white',
+            margin: 0, fontSize: 26, fontWeight: 700, color: 'white',
             letterSpacing: '-0.025em', fontFamily: 'var(--display)',
-            lineHeight: 1.1, textShadow: '0 2px 16px rgba(0,0,0,0.15)',
+            lineHeight: 1.1, textShadow: '0 2px 16px rgba(0,0,0,0.2)',
           }}>{fullName}</h1>
 
+          {/* Specialization tags */}
           {specializationTags.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 14 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 6 }}>
               {specializationTags.map(s => (
                 <span key={s.id} style={{
-                  padding: '5px 12px', fontSize: 12.5, fontWeight: 500,
-                  borderRadius: 999, background: 'rgba(255,255,255,0.95)',
-                  color: '#0F172A', backdropFilter: 'blur(8px)',
+                  padding: '4px 11px', fontSize: 12.5, fontWeight: 500,
+                  borderRadius: 999, background: 'rgba(255,255,255,0.9)',
+                  color: '#0F172A',
                 }}>{s.name}</span>
               ))}
             </div>
           )}
 
-          <div style={{
-            display: 'flex', flexWrap: 'wrap', gap: 20, marginTop: 16,
-            color: 'rgba(255,255,255,0.95)', fontSize: 13.5,
-          }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ color: '#F5A524', display: 'inline-flex' }}><StarIcon filled size={15} /></span>
+          {/* Stats row */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 12, color: 'rgba(255,255,255,0.95)', fontSize: 13 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ color: '#F5A524', display: 'inline-flex' }}><StarIcon filled size={13} /></span>
               <strong style={{ color: 'white', fontWeight: 600 }}>{rating.toFixed(1)}</strong>
-              <span style={{ opacity: 0.85 }}>({numOfReviews} відгуків)</span>
+              <span style={{ opacity: 0.85 }}>({numOfReviews})</span>
             </span>
             {city && (
-              <>
-                <span style={{ opacity: 0.5 }}>·</span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                  <Icon d="M12 21s-7-7.5-7-13a7 7 0 1114 0c0 5.5-7 13-7 13z M12 11a2 2 0 100-4 2 2 0 000 4z" size={14} />
-                  {city}
-                </span>
-              </>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                <Icon d="M12 21s-7-7.5-7-13a7 7 0 1114 0c0 5.5-7 13-7 13z M12 11a2 2 0 100-4 2 2 0 000 4z" size={13} />
+                {city}
+              </span>
             )}
-            <span style={{ opacity: 0.5 }}>·</span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <Icon d="M12 8v4l3 2 M21 12a9 9 0 11-18 0 9 9 0 0118 0z" size={14} />
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+              <Icon d="M12 8v4l3 2 M21 12a9 9 0 11-18 0 9 9 0 0118 0z" size={13} />
               {experienceYears} {experienceYears === 1 ? 'рік' : experienceYears < 5 ? 'роки' : 'років'} досвіду
             </span>
             {minPrice != null && (
-              <>
-                <span style={{ opacity: 0.5 }}>·</span>
-                <span>
-                  від <strong style={{ color: 'white', fontWeight: 700, fontSize: 15 }}>{minPrice} грн</strong> / заняття
-                </span>
-              </>
+              <span>від <strong style={{ color: 'white', fontWeight: 700 }}>{minPrice} грн</strong></span>
             )}
           </div>
         </div>
+      ) : (
+        /* ── Desktop: grid layout ── */
+        <div style={{
+          position: 'relative', maxWidth: 1280, margin: '0 auto',
+          padding: '40px 32px 28px',
+          display: 'grid',
+          gridTemplateColumns: 'auto 1fr auto',
+          gap: 28, alignItems: 'flex-end',
+        }}>
+          {/* Avatar */}
+          <div style={{
+            width: 168, height: 168, borderRadius: '50%',
+            background: showGradient
+              ? `linear-gradient(135deg, hsl(${hue} 60% 62%), hsl(${(hue + 35) % 360} 65% 45%))`
+              : undefined,
+            position: 'relative', overflow: 'hidden', flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: '5px solid white',
+            boxShadow: '0 12px 32px rgba(15, 23, 42, 0.18)',
+          }}>
+            {showGradient ? (
+              <>
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: `radial-gradient(120% 80% at 50% 110%, rgba(0,0,0,.25), transparent 60%),
+                               radial-gradient(60% 50% at 30% 25%, rgba(255,255,255,.35), transparent 70%)`,
+                }} />
+                <span style={{
+                  color: 'white', fontWeight: 700, fontSize: 60,
+                  letterSpacing: '-0.02em', fontFamily: 'var(--display)',
+                  textShadow: '0 2px 12px rgba(0,0,0,.2)',
+                }}>{initials}</span>
+              </>
+            ) : (
+              <img src={avatarUrl!} alt={fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setImgError(true)} />
+            )}
+          </div>
 
-        {/* CTA */}
-        <div style={{ paddingBottom: 8 }}>
-          <button
-            type="button"
-            onClick={onBook}
-            style={{
-              padding: '14px 26px', background: 'var(--accent-600)', color: 'white',
-              border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 600,
-              cursor: 'pointer', fontFamily: 'inherit',
-              boxShadow: '0 8px 24px var(--accent-shadow)',
-              transition: 'all 160ms',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent-700)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'var(--accent-600)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-          >
-            Записатись на заняття
-          </button>
+          {/* Info */}
+          <div style={{ minWidth: 0, paddingBottom: 8 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              {isVerified && (
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '5px 11px 5px 9px', borderRadius: 999,
+                  background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)',
+                  fontSize: 12.5, fontWeight: 600, color: 'var(--accent-700)',
+                }}>
+                  <span style={{ color: 'var(--accent-600)', display: 'inline-flex' }}><VerifiedBadge /></span>
+                  Верифіковано
+                </span>
+              )}
+              {isAccessible && (
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '5px 11px 5px 9px', borderRadius: 999,
+                  background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)',
+                  fontSize: 12.5, fontWeight: 600, color: '#0F172A',
+                }}>
+                  <Icon d="M12 4a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM19 13l-4 0-1-3-3 0 0 5 5 0 1 6M11 12a4 4 0 1 0 4 6" size={14} />
+                  Інклюзивний тренер
+                </span>
+              )}
+            </div>
+            <h1 style={{
+              margin: 0, fontSize: 40, fontWeight: 700, color: 'white',
+              letterSpacing: '-0.025em', fontFamily: 'var(--display)',
+              lineHeight: 1.1, textShadow: '0 2px 16px rgba(0,0,0,0.15)',
+            }}>{fullName}</h1>
+            {specializationTags.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 14 }}>
+                {specializationTags.map(s => (
+                  <span key={s.id} style={{
+                    padding: '5px 12px', fontSize: 12.5, fontWeight: 500,
+                    borderRadius: 999, background: 'rgba(255,255,255,0.95)',
+                    color: '#0F172A', backdropFilter: 'blur(8px)',
+                  }}>{s.name}</span>
+                ))}
+              </div>
+            )}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, marginTop: 16, color: 'rgba(255,255,255,0.95)', fontSize: 13.5 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ color: '#F5A524', display: 'inline-flex' }}><StarIcon filled size={15} /></span>
+                <strong style={{ color: 'white', fontWeight: 600 }}>{rating.toFixed(1)}</strong>
+                <span style={{ opacity: 0.85 }}>({numOfReviews} відгуків)</span>
+              </span>
+              {city && (
+                <>
+                  <span style={{ opacity: 0.5 }}>·</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <Icon d="M12 21s-7-7.5-7-13a7 7 0 1114 0c0 5.5-7 13-7 13z M12 11a2 2 0 100-4 2 2 0 000 4z" size={14} />
+                    {city}
+                  </span>
+                </>
+              )}
+              <span style={{ opacity: 0.5 }}>·</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <Icon d="M12 8v4l3 2 M21 12a9 9 0 11-18 0 9 9 0 0118 0z" size={14} />
+                {experienceYears} {experienceYears === 1 ? 'рік' : experienceYears < 5 ? 'роки' : 'років'} досвіду
+              </span>
+              {minPrice != null && (
+                <>
+                  <span style={{ opacity: 0.5 }}>·</span>
+                  <span>від <strong style={{ color: 'white', fontWeight: 700, fontSize: 15 }}>{minPrice} грн</strong> / заняття</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div style={{ paddingBottom: 8 }}>
+            <button
+              type="button"
+              onClick={onBook}
+              style={{
+                padding: '14px 26px', background: 'var(--accent-600)', color: 'white',
+                border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'inherit',
+                boxShadow: '0 8px 24px var(--accent-shadow)', transition: 'all 160ms',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent-700)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'var(--accent-600)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+            >
+              Записатись на заняття
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -289,6 +388,7 @@ interface BioProps {
 }
 
 function BioSection({ bio, experienceYears, numOfCompletedClasses, numOfActiveClients, methodologyTags }: BioProps) {
+  const isMobile = useIsMobile();
   const stats = [
     { label: 'Занять проведено', value: numOfCompletedClasses > 0 ? `${numOfCompletedClasses}+` : '—' },
     { label: 'Активних клієнтів', value: String(numOfActiveClients) },
@@ -297,7 +397,7 @@ function BioSection({ bio, experienceYears, numOfCompletedClasses, numOfActiveCl
 
   return (
     <section style={{
-      background: 'white', border: '1px solid #E7E9EE', borderRadius: 16, padding: 28,
+      background: 'white', border: '1px solid #E7E9EE', borderRadius: 16, padding: isMobile ? 16 : 28,
     }}>
       <h2 style={sectionTitle}>Про тренера</h2>
 
@@ -348,11 +448,12 @@ function BioSection({ bio, experienceYears, numOfCompletedClasses, numOfActiveCl
 
 function ReviewsSection({ reviews, rating, numOfReviews }: { reviews: TrainerProfileReview[]; rating: number; numOfReviews: number }) {
   const [showAll, setShowAll] = useState(false);
+  const isMobile = useIsMobile();
   const visible = showAll ? reviews : reviews.slice(0, 3);
 
   return (
     <section style={{
-      background: 'white', border: '1px solid #E7E9EE', borderRadius: 16, padding: 28,
+      background: 'white', border: '1px solid #E7E9EE', borderRadius: 16, padding: isMobile ? 16 : 28,
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 22 }}>
         <h2 style={sectionTitle}>Відгуки клієнтів</h2>
@@ -454,6 +555,7 @@ interface BookingCalendarProps {
 
 function BookingCalendar({ slots, minPrice, onBook }: BookingCalendarProps) {
   const today = useMemo(() => new Date(), []);
+  const isMobile = useIsMobile();
   const [month, setMonth] = useState<Date>(() => {
     const d = new Date();
     d.setDate(1);
@@ -499,8 +601,15 @@ function BookingCalendar({ slots, minPrice, onBook }: BookingCalendarProps) {
 
   return (
     <aside style={{
-      background: 'white', border: '1px solid #E7E9EE', borderRadius: 16,
-      padding: 22, position: 'sticky', top: 84, alignSelf: 'flex-start',
+      background: 'white',
+      border: '1px solid #E7E9EE',
+      borderRadius: 16,
+      padding: isMobile ? 16 : 22,
+      position: isMobile ? 'static' : 'sticky',
+      top: 84,
+      alignSelf: isMobile ? 'stretch' : 'flex-start',
+      width: isMobile ? '100%' : undefined,
+      boxSizing: 'border-box',
     }}>
       <div style={{ marginBottom: 16 }}>
         <h2 style={{ ...sectionTitle, fontSize: 17, marginBottom: 4 }}>Записатись на заняття</h2>
@@ -704,6 +813,7 @@ export default function TrainerProfilePage() {
   const { profile, slots, reviews, isLoading, error, refetchSlots } = useTrainerProfile(id ?? '');
   const calendarRef = useRef<HTMLDivElement>(null);
   const [showCreateSlot, setShowCreateSlot] = useState(false);
+  const isMobile = useIsMobile();
 
   const isOwner = user?.id === id && user?.role === UserRole.Trainer;
 
@@ -824,11 +934,13 @@ export default function TrainerProfilePage() {
 
       <main style={{
         maxWidth: 1280, margin: '0 auto',
-        padding: '32px 32px 64px',
-        display: 'grid', gridTemplateColumns: '1fr 360px', gap: 28,
+        padding: isMobile ? '16px 12px 48px' : '32px 32px 64px',
+        display: 'grid',
+        gridTemplateColumns: isMobile ? '1fr' : '1fr 360px',
+        gap: isMobile ? 12 : 28,
         alignItems: 'flex-start',
       }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, minWidth: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, minWidth: 0, order: isMobile ? 2 : undefined, paddingTop: isMobile ? 16 : undefined }}>
           <BioSection
             bio={profile.bio}
             experienceYears={profile.experienceYears}
@@ -843,7 +955,7 @@ export default function TrainerProfilePage() {
           />
         </div>
 
-        <div ref={calendarRef} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div ref={calendarRef} style={{ display: 'flex', flexDirection: 'column', gap: 12, order: isMobile ? 1 : undefined }}>
           {isOwner && (
             <button
               type="button"

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useIsMobile } from '../../hooks/useWindowWidth';
 
 const UA_CITIES = [
   'Київ', 'Харків', 'Одеса', 'Дніпро', 'Запоріжжя', 'Львів',
@@ -66,7 +67,7 @@ function formatBytes(bytes: number): string {
 
 function FieldLabel({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
       <label style={{ fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>{label}</label>
       {children}
     </div>
@@ -96,6 +97,7 @@ interface Props {
 
 export default function TrainerSettingsTab({ trainerId, profile, isLoading, onSaved }: Props) {
   const { user } = useAuthContext();
+  const isMobile = useIsMobile();
 
   // Profile form
   const [firstName, setFirstName] = useState('');
@@ -312,7 +314,7 @@ export default function TrainerSettingsTab({ trainerId, profile, isLoading, onSa
         <section style={card}>
           <h2 style={sectionTitle}>Особисті дані</h2>
 
-          <div style={{ display: 'flex', gap: 18, alignItems: 'center', margin: '16px 0 20px' }}>
+          <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 18, alignItems: isMobile ? 'flex-start' : 'center', margin: '16px 0 20px' }}>
             <div style={{ position: 'relative', flexShrink: 0 }}>
               {avatarPreview ? (
                 <img src={avatarPreview} alt="" style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover' }} />
@@ -342,7 +344,7 @@ export default function TrainerSettingsTab({ trainerId, profile, isLoading, onSa
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14, marginBottom: 14 }}>
             <FieldLabel label="Ім'я">
               <input value={firstName} onChange={e => setFirstName(e.target.value)} style={inputStyle} />
             </FieldLabel>
@@ -570,7 +572,7 @@ export default function TrainerSettingsTab({ trainerId, profile, isLoading, onSa
           )}
 
           {/* Upload row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 10, alignItems: 'flex-end' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr auto', gap: 10, alignItems: 'flex-end' }}>
             <FieldLabel label="Тип документа">
               <select value={docType} onChange={e => setDocType(Number(e.target.value) as DocumentType)} style={{ ...inputStyle, cursor: 'pointer' }}>
                 <option value={DocumentType.Certificate}>Сертифікат</option>
@@ -582,7 +584,9 @@ export default function TrainerSettingsTab({ trainerId, profile, isLoading, onSa
             <label style={{
               padding: '10px 14px', borderRadius: 9, border: '1.5px solid #E7E9EE',
               fontSize: 13.5, fontWeight: 500, cursor: 'pointer', color: '#3F4651',
-              background: 'white', whiteSpace: 'nowrap', display: 'inline-block',
+              background: 'white', whiteSpace: 'nowrap', display: 'block',
+              overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0, boxSizing: 'border-box',
+              textAlign: 'center',
             }}>
               {docFile ? docFile.name : 'Обрати файл'}
               <input type="file" accept=".pdf,image/jpeg,image/png" onChange={e => setDocFile(e.target.files?.[0] ?? null)} style={{ display: 'none' }} />

@@ -1,7 +1,9 @@
 import { useSearchParams, Link } from 'react-router-dom';
+import { useIsMobile } from '../hooks/useWindowWidth';
 
 export default function BookingSuccessPage() {
   const [params] = useSearchParams();
+  const isMobile = useIsMobile();
   const session = params.get('session');
 
   return (
@@ -20,7 +22,7 @@ export default function BookingSuccessPage() {
           background: 'white',
           border: '1px solid #E7E9EE',
           borderRadius: 20,
-          padding: '48px 40px',
+          padding: isMobile ? '32px 20px' : '48px 40px',
           maxWidth: 480,
           width: '100%',
           textAlign: 'center',
@@ -47,7 +49,7 @@ export default function BookingSuccessPage() {
         <h1
           style={{
             margin: '0 0 8px',
-            fontSize: 26,
+            fontSize: isMobile ? 20 : 26,
             fontWeight: 700,
             color: '#0F172A',
             letterSpacing: '-0.025em',
@@ -64,7 +66,7 @@ export default function BookingSuccessPage() {
         </p>
 
         {session && (
-          <p style={{ margin: '0 0 24px', fontSize: 12, color: '#9CA3AF' }}>
+          <p style={{ margin: '0 0 24px', fontSize: 12, color: '#9CA3AF', wordBreak: 'break-all' }}>
             ID сесії: {session}
           </p>
         )}

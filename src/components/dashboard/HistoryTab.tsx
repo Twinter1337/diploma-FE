@@ -4,6 +4,7 @@ import { BookingStatus } from '../../types';
 import type { BookingHistoryItem } from '../../types';
 import SessionNotes from '../SessionNotes';
 import DisputeModal from '../dispute/DisputeModal';
+import { useIsMobile } from '../../hooks/useWindowWidth';
 
 function nameHue(name: string): number {
   let h = 0;
@@ -87,6 +88,7 @@ interface Props {
 
 export default function HistoryTab({ history, isLoading, error, currentUserId, onSubmitReview }: Props) {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [drafting, setDrafting] = useState<number | null>(null);
   const [draftRating, setDraftRating] = useState(0);
   const [draftText, setDraftText] = useState('');
@@ -148,107 +150,129 @@ export default function HistoryTab({ history, isLoading, error, currentUserId, o
           onClose={() => setDisputeFor(null)}
         />
       )}
-      {history.map((item, idx) => (
-        <article key={idx} style={card}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 18, alignItems: 'flex-start' }}>
-            <TrainerAvatar name={item.trainerFullName} size={56} avatarUrl={item.trainerAvatarUrl} />
+      {history.map((item, idx) => {
+        const actionButtons = (
+          <div style={{ display: 'flex', flexDirection: isMobile ? 'row' : 'column', gap: 8 }}>
+            {!item.review && drafting !== idx && item.bookingStatus === BookingStatus.Completed && (
+              <button onClick={() => { setDrafting(idx); setDraftRating(0); setDraftText(''); }}
+                style={{ ...btnPrimary, flex: isMobile ? 1 : undefined }}>
+                Залишити відгук
+              </button>
+            )}
+            {item.review && (
+              <button onClick={() => navigate(`/trainer/${item.trainerId}`)}
+                style={{ ...btnGhost, flex: isMobile ? 1 : undefined }}>
+                Записатись знову
+              </button>
+            )}
+            <button onClick={() => setDisputeFor(item)}
+              style={{ ...btnGhost, flex: isMobile ? 1 : undefined }}>
+              Відкрити спір
+            </button>
+          </div>
+        );
 
-            <div style={{ minWidth: 0 }}>
-              <h3 style={{ margin: 0, fontSize: 15.5, fontWeight: 600, color: '#0F172A', letterSpacing: '-0.01em' }}>
-                {item.trainerFullName}
-              </h3>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, fontSize: 13, color: '#6B7280', marginTop: 6 }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                  <CalendarIcon />
-                  {formatDateUk(item.startTime)}
-                </span>
-                <span style={{ color: '#0F172A', fontWeight: 600 }}>{item.price} грн</span>
+        return (
+          <article key={idx} style={card}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? 'auto 1fr' : 'auto 1fr auto',
+              gap: isMobile ? 12 : 18,
+              alignItems: 'flex-start',
+            }}>
+              <TrainerAvatar name={item.trainerFullName} size={isMobile ? 48 : 56} avatarUrl={item.trainerAvatarUrl} />
+
+              <div style={{ minWidth: 0 }}>
+                <h3 style={{ margin: 0, fontSize: isMobile ? 14.5 : 15.5, fontWeight: 600, color: '#0F172A', letterSpacing: '-0.01em' }}>
+                  {item.trainerFullName}
+                </h3>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 8 : 14, fontSize: 13, color: '#6B7280', marginTop: 5 }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
+                    <CalendarIcon />
+                    {formatDateUk(item.startTime)}
+                  </span>
+                  <span style={{ color: '#0F172A', fontWeight: 600 }}>{item.price} грн</span>
+                </div>
+
+                {item.review && (
+                  <div style={{
+                    marginTop: 10, padding: '10px 12px', background: '#FAFBFC',
+                    borderRadius: 10, border: '1px solid #EDEFF3',
+                  }}>
+                    <div style={{ display: 'inline-flex', color: '#F5A524', marginBottom: 4 }}>
+                      {[1, 2, 3, 4, 5].map(i => (
+                        <StarIcon key={i} filled={item.review!.rating >= i} size={13} />
+                      ))}
+                    </div>
+                    {item.review.comment && (
+                      <p style={{ margin: 0, fontSize: 13.5, color: '#3F4651', lineHeight: 1.55 }}>
+                        {item.review.comment}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {drafting === idx && (
+                  <div style={{
+                    marginTop: 12, padding: 14, background: 'var(--accent-50)',
+                    borderRadius: 10, border: '1px solid var(--accent-100)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 10 }}>
+                      {[1, 2, 3, 4, 5].map(n => (
+                        <button key={n} onClick={() => setDraftRating(n)} style={{
+                          background: 'none', border: 'none', padding: 2, cursor: 'pointer',
+                          color: draftRating >= n ? '#F5A524' : '#D9DCE2',
+                        }}>
+                          <StarIcon filled size={22} />
+                        </button>
+                      ))}
+                    </div>
+                    <textarea
+                      value={draftText}
+                      onChange={e => setDraftText(e.target.value)}
+                      placeholder="Поділіться враженнями від заняття…"
+                      style={{
+                        width: '100%', minHeight: 70, padding: 10,
+                        border: '1px solid #D9DCE2', borderRadius: 8,
+                        fontSize: 13.5, fontFamily: 'inherit', resize: 'vertical',
+                        outline: 'none', boxSizing: 'border-box',
+                        background: 'white', color: '#0F172A',
+                      }}
+                    />
+                    <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                      <button
+                        onClick={() => handleSubmit(idx, item)}
+                        disabled={!draftRating || submitting}
+                        style={{
+                          ...btnPrimary,
+                          opacity: draftRating && !submitting ? 1 : 0.5,
+                          cursor: draftRating && !submitting ? 'pointer' : 'not-allowed',
+                        }}
+                      >
+                        Опублікувати
+                      </button>
+                      <button onClick={() => { setDrafting(null); setDraftRating(0); setDraftText(''); }} style={btnGhost}>
+                        Скасувати
+                      </button>
+                    </div>
+                  </div>
+                )}
+
               </div>
 
-              {item.review && (
-                <div style={{
-                  marginTop: 12, padding: '12px 14px', background: '#FAFBFC',
-                  borderRadius: 10, border: '1px solid #EDEFF3',
-                }}>
-                  <div style={{ display: 'inline-flex', color: '#F5A524', marginBottom: 6 }}>
-                    {[1, 2, 3, 4, 5].map(i => (
-                      <StarIcon key={i} filled={item.review!.rating >= i} size={13} />
-                    ))}
-                  </div>
-                  {item.review.comment && (
-                    <p style={{ margin: 0, fontSize: 13.5, color: '#3F4651', lineHeight: 1.55 }}>
-                      {item.review.comment}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {drafting === idx && (
-                <div style={{
-                  marginTop: 12, padding: 14, background: 'var(--accent-50)',
-                  borderRadius: 10, border: '1px solid var(--accent-100)',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 10 }}>
-                    {[1, 2, 3, 4, 5].map(n => (
-                      <button key={n} onClick={() => setDraftRating(n)} style={{
-                        background: 'none', border: 'none', padding: 2, cursor: 'pointer',
-                        color: draftRating >= n ? '#F5A524' : '#D9DCE2',
-                      }}>
-                        <StarIcon filled size={22} />
-                      </button>
-                    ))}
-                  </div>
-                  <textarea
-                    value={draftText}
-                    onChange={e => setDraftText(e.target.value)}
-                    placeholder="Поділіться враженнями від заняття…"
-                    style={{
-                      width: '100%', minHeight: 70, padding: 10,
-                      border: '1px solid #D9DCE2', borderRadius: 8,
-                      fontSize: 13.5, fontFamily: 'inherit', resize: 'vertical',
-                      outline: 'none', boxSizing: 'border-box',
-                      background: 'white', color: '#0F172A',
-                    }}
-                  />
-                  <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                    <button
-                      onClick={() => handleSubmit(idx, item)}
-                      disabled={!draftRating || submitting}
-                      style={{
-                        ...btnPrimary,
-                        opacity: draftRating && !submitting ? 1 : 0.5,
-                        cursor: draftRating && !submitting ? 'pointer' : 'not-allowed',
-                      }}
-                    >
-                      Опублікувати
-                    </button>
-                    <button onClick={() => { setDrafting(null); setDraftRating(0); setDraftText(''); }} style={btnGhost}>
-                      Скасувати
-                    </button>
-                  </div>
-                </div>
-              )}
+              {!isMobile && actionButtons}
             </div>
 
-            <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {!item.review && drafting !== idx && item.bookingStatus === BookingStatus.Completed && (
-                <button onClick={() => { setDrafting(idx); setDraftRating(0); setDraftText(''); }} style={btnPrimary}>
-                  Залишити відгук
-                </button>
-              )}
-              {item.review && (
-                <button onClick={() => navigate(`/trainer/${item.trainerId}`)} style={btnGhost}>
-                  Записатись знову
-                </button>
-              )}
-              <button onClick={() => setDisputeFor(item)} style={btnGhost}>
-                Відкрити спір
-              </button>
-            </div>
-          </div>
-          <SessionNotes bookingId={item.id} currentUserId={currentUserId} />
-        </article>
-      ))}
+            {isMobile && (
+              <div style={{ marginTop: 12 }}>
+                {actionButtons}
+              </div>
+            )}
+
+            <SessionNotes bookingId={item.id} currentUserId={currentUserId} />
+          </article>
+        );
+      })}
     </div>
   );
 }

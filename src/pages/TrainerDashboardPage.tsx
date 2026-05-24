@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import AppHeader from '../components/ui/AppHeader';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useIsMobile } from '../hooks/useWindowWidth';
 import { useTrainerDashboard } from '../hooks/useTrainerDashboard';
 import { useTrainerProfile } from '../hooks/useTrainerProfile';
 import ScheduleTab from '../components/trainer-dashboard/ScheduleTab';
@@ -21,6 +22,7 @@ interface TabDef {
 export default function TrainerDashboardPage() {
   const { user } = useAuthContext();
   const trainerId = user?.id ?? '';
+  const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState<TabId>('schedule');
 
   const [showNewSlot, setShowNewSlot] = useState(false);
@@ -42,11 +44,11 @@ export default function TrainerDashboardPage() {
     <div style={{ minHeight: '100vh', background: '#F8F9FB' }}>
       <AppHeader />
 
-      <main style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 32px 64px' }}>
+      <main style={{ maxWidth: 1280, margin: '0 auto', padding: isMobile ? '16px 16px 48px' : '32px 32px 64px' }}>
         <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
           <div>
             <h1 style={{
-              margin: 0, fontSize: 28, fontWeight: 700, color: '#0F172A',
+              margin: 0, fontSize: isMobile ? 22 : 28, fontWeight: 700, color: '#0F172A',
               letterSpacing: '-0.025em', fontFamily: 'var(--display)',
             }}>
               Привіт, {user?.firstName ?? ''} 👋
