@@ -663,6 +663,8 @@ export default function TicketDetail({
                   fontSize: 14,
                   fontFamily: 'inherit',
                   color: '#0F172A',
+                  background: '#FFFFFF',
+                  colorScheme: 'light',
                   resize: 'vertical',
                   outline: 'none',
                   lineHeight: 1.55,

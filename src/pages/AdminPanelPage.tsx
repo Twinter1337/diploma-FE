@@ -159,6 +159,8 @@ export default function AdminPanelPage() {
                 borderRadius: 9,
                 border: '1px solid #E7E9EE',
                 background: 'white',
+                color: '#0F172A',
+                colorScheme: 'light',
                 fontSize: 13.5,
                 fontFamily: 'inherit',
                 outline: 'none',
